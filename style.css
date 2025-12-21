@@ -654,13 +654,14 @@ body.dark-theme .log-special {
     border-radius: 10px;
     padding: 8px 12px;
     font-size: 12px;
-    width: max-content;     /* 1. 글자 길이에 딱 맞게 박스가 늘어납니다. */
-    max-width: 250px;       /* 2. 하지만 이 너비를 넘어가면 줄바꿈을 시작합니다. */
-    white-space: normal;    /* 3. 줄바꿈 허용 */
-    word-break: keep-all;   /* 4. 단어 단위로 예쁘게 끊기 */
-    line-height: 1.4;       /* 5. 줄 간격을 줘서 가독성 높이기 */
-    text-align: center;     /* 6. 여러 줄일 때 가운데 정렬 (선택사항) */
-    z-index: 20;
+    width: max-content;     
+    max-width: 40vw;         /* [수정] 화면 가로폭의 40% 이상 커지지 않게 제한 */
+    min-width: 80px;         /* [추가] 너무 짧아지는 것 방지 */
+    white-space: normal;
+    word-break: keep-all;
+    line-height: 1.4;
+    text-align: center;
+    z-index: 100;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     pointer-events: none;
     transition: opacity 0.3s;
