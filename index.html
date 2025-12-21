@@ -1005,7 +1005,7 @@
         function scheduleNextMove(id) {
             if (isInteracting) return;
 
-            // [수정 1] 대기 시간을 1~3초로 줄여서 더 자주 움직이게 함
+            // 대기 시간: 1~3초 (자주 움직임)
             const waitTime = Math.random() * 2000 + 1000;
 
             setTimeout(() => {
@@ -1014,10 +1014,23 @@
                     return;
                 }
 
-                // [수정 2] 대화 발생 확률을 0.3(30%) -> 0.6(60%)로 대폭 상향
-                if (id === 'dangbo' && Math.random() < 0.6) {
+                const rand = Math.random();
+
+                // 1. 상호작용 시도 (당보일 때 40% 확률)
+                if (id === 'dangbo' && rand < 0.4) {
                     triggerInteraction();
-                } else {
+                }
+                // 2. 혼잣말 하기 (30% 확률) - 상호작용이 아닐 때 발동
+                else if (rand < 0.7) {
+                    triggerMonologue(id); // 혼잣말 말풍선 띄우기
+
+                    // 말하면서 이동도 해야 하니 이동 로직 실행
+                    const tx = Math.random() * 80 + 10;
+                    const ty = Math.random() * 60 + 20;
+                    moveTo(id, tx, ty, () => scheduleNextMove(id));
+                }
+                // 3. 그냥 조용히 이동 (나머지 30%)
+                else {
                     const tx = Math.random() * 80 + 10;
                     const ty = Math.random() * 60 + 20;
                     moveTo(id, tx, ty, () => scheduleNextMove(id));
