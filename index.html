@@ -595,6 +595,83 @@
             font-family: 'JoseonGulim';
             margin-top: 5px;
         }
+        
+        /* [1] 스페셜 이벤트 팝업 */
+        #event-popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(0, 0, 0, 0.9);
+            color: #FFD700;
+            padding: 20px 40px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            border: 2px solid #FFC107;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+            transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #event-popup.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #event-popup h2 { margin: 0 0 10px 0; font-size: 1.5rem; }
+        #event-popup p { margin: 0; color: #fff; font-size: 1rem; }
+
+        /* [2] 황금색 로그 */
+        .log-special {
+            background-color: #fff8e1 !important;
+            border-left: 4px solid #FFC107 !important;
+            color: #5d4037 !important;
+            font-weight: bold;
+        }
+        body.dark-theme .log-special { background-color: #4e342e !important; color: #ffecb3 !important; }
+
+        /* [3] 커스텀 말풍선 (기존 .bubble 대체) */
+        .char-bubble {
+            position: absolute;
+            bottom: 110%; left: 50%;
+            transform: translateX(-50%);
+            background: var(--bubble-bg, #ffffff); /* JS에서 색상 주입 */
+            color: var(--bubble-text, #000000);
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 20;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            pointer-events: none;
+            transition: opacity 0.3s;
+            font-weight: bold;
+            opacity: 0;
+        }
+        .char-bubble.show { opacity: 1; }
+
+        /* 말풍선 꼬리 */
+        .char-bubble::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 6px 0 6px; border-style: solid;
+            border-color: var(--bubble-bg, #ffffff) transparent transparent transparent;
+        }
+
+        /* [당보용 스타일] 높게, 왼쪽으로 치우침 */
+        .char-bubble.pos-high {
+            bottom: 120%; 
+            transform: translateX(-80%) !important; /* 왼쪽으로 밀기 */
+            border-bottom-right-radius: 0;
+        }
+        .char-bubble.pos-high::after { left: 80%; }
+
+        /* [청명용 스타일] 낮게, 오른쪽으로 치우침 */
+        .char-bubble.pos-low {
+            bottom: 100%;
+            transform: translateX(-20%) !important; /* 오른쪽으로 밀기 */
+            border-bottom-left-radius: 0;
+        }
+        .char-bubble.pos-low::after { left: 20%; }
+        
     </style>
 </head>
 
@@ -645,6 +722,11 @@
             </div>
 
         </div>
+        
+        <div id="event-popup">
+        <h2 id="popup-title">이벤트 제목</h2>
+        <p id="popup-desc">이벤트 내용</p>
+    </div>
     </main>
 
     <script>
@@ -847,22 +929,47 @@
             requestAnimationFrame(updateTime);
         }
 
+       // [수정] 날짜 변경: 스페셜 이벤트 발동 추가
         function advanceDay() {
             gameDate.day++;
-            if (gameDate.day > 30) { // 편의상 매달 30일로 고정
+            if (gameDate.day > 30) {
                 gameDate.day = 1;
                 gameDate.month++;
                 if (gameDate.month > 12) gameDate.month = 1;
             }
 
-            // 로그 기록 ([시스템] 태그 삭제, true 파라미터 추가)
+            // 날짜 변경 로그 (이벤트 여부 확인)
+            const isEventDay = (gameDate.day === 10 || gameDate.day === 20 || gameDate.day === 30);
             addLog(`${gameDate.month}월 ${gameDate.day}일이 되었습니다`, true);
+            
+            // 이벤트 날이면 이벤트 실행
+            if (isEventDay) {
+                setTimeout(triggerSpecialEvent, 1000);
+            }
 
-            // [중요] 날짜가 바뀔 때마다 저장
             localStorage.setItem('savedGameDate', JSON.stringify(gameDate));
-
-            // UI 업데이트
             updateDateUI();
+        }
+        
+        // [추가] 스페셜 이벤트 함수
+        function triggerSpecialEvent() {
+            const season = getSeason(gameDate.month);
+            const data = specialEventDB[season];
+            if (!data) return;
+
+            // 팝업 표시
+            const popup = document.getElementById('event-popup');
+            document.getElementById('popup-title').innerText = data.title;
+            document.getElementById('popup-desc').innerText = "스페셜 에피소드!";
+            popup.classList.add('show');
+            setTimeout(() => popup.classList.remove('show'), 3000);
+
+            // 로그 및 대사
+            addLog(`<span style="color:#d35400;">[${data.title}]</span> ${data.log}`, false); // 여기 false는 날짜로그 아님 의미
+            
+            // 말풍선 (단순 표시)
+            showBubble('dangbo', data.talk.dangbo, 'high');
+            setTimeout(() => showBubble('chung', data.talk.chung, 'low'), 1500);
         }
 
         function updateDateUI() {
@@ -912,12 +1019,23 @@
                     `<option value="${p}" ${data.trait === p ? 'selected' : ''}>${p}</option>`
                 ).join('');
 
+                // 배경색에 따라 글자색(흰/검) 자동 계산 (이름표 가독성용)
+                const nameTagColor = getContrastYIQ(data.color);
+
                 html = `
                     <div style="text-align:center; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #eee;">
                         <h2 style="color:${data.color}; margin-bottom:5px;">${data.name}</h2>
-                        <span style="background:${data.color}; color:white; padding:3px 8px; border-radius:10px; font-size:0.8rem;">${data.title}</span>
+                        <span style="background:${data.color}; color:${nameTagColor}; padding:3px 8px; border-radius:10px; font-size:0.8rem;">${data.title}</span>
                     </div>
                     
+                    <div class="info-box">
+                        <span class="info-label">🎨 대표 컬러 설정</span>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <input type="color" value="${data.color}" onchange="updateCharSetting('color', this.value)" style="width:50px; height:30px; padding:0; border:none; background:none; cursor:pointer;">
+                            <span style="font-size:0.8rem; color:#666;">클릭하여 말풍선 색 변경</span>
+                        </div>
+                    </div>
+
                     <div class="info-box">
                         <span class="info-label">⚧ 성별 설정</span>
                         <select class="custom-select" onchange="updateCharSetting('gender', this.value)">
@@ -1074,34 +1192,34 @@
             }, duration * 1000);
         }
 
+        // [수정] 행동 스케줄링: 쿨타임 체크 추가 (유령 방지 로직 유지)
         function scheduleNextMove(id) {
-            if (isInteracting) return;
+            if (isInteracting) return; // 상호작용 중이면 아예 명령 거부
 
-            // 대기 시간: 1~3초 (자주 움직임)
             const waitTime = Math.random() * 2000 + 1000;
 
             setTimeout(() => {
                 if (isInteracting) {
-                    scheduleNextMove(id);
+                    scheduleNextMove(id); // 상호작용 중이면 나중에 다시 확인 (안전)
                     return;
                 }
 
                 const rand = Math.random();
+                // 쿨타임 체크 (10초)
+                const isCooltime = (Date.now() - lastDialogTime) < 10000;
 
-                // 1. 상호작용 시도 (당보일 때 40% 확률)
-                if (id === 'dangbo' && rand < 0.4) {
+                // 1. 상호작용 (당보 40% + 쿨타임 아님)
+                if (id === 'dangbo' && rand < 0.4 && !isCooltime) {
                     triggerInteraction();
                 }
-                // 2. 혼잣말 하기 (30% 확률) - 상호작용이 아닐 때 발동
+                // 2. 혼잣말 (30%)
                 else if (rand < 0.7) {
-                    triggerMonologue(id); // 혼잣말 말풍선 띄우기
-
-                    // 말하면서 이동도 해야 하니 이동 로직 실행
+                    triggerMonologue(id); 
                     const tx = Math.random() * 80 + 10;
                     const ty = Math.random() * 60 + 20;
                     moveTo(id, tx, ty, () => scheduleNextMove(id));
                 }
-                // 3. 그냥 조용히 이동 (나머지 30%)
+                // 3. 그냥 이동
                 else {
                     const tx = Math.random() * 80 + 10;
                     const ty = Math.random() * 60 + 20;
@@ -1129,39 +1247,36 @@
             moveTo('chung', meetX + 8, meetY, onArrive);
         }
 
+        // [수정] 대화 시작: 쿨타임 저장 + 말풍선 위치 적용
         function startDialog() {
             const dangbo = charData['dangbo'];
             const chung = charData['chung'];
+            
+            let title = "도사 형님";
+            if (dangbo.gender === '여성' && chung.gender === '여성') title = "도사 언니";
+            else if (dangbo.gender === '남성' && chung.gender === '여성') title = "도사 누님";
 
-            // 1. 호칭 결정 로직 ([도사] 꼭 포함!)
-            let title = "도사 형님"; // 기본값 (남-남, 여-남)
-
-            if (dangbo.gender === '여성' && chung.gender === '여성') {
-                title = "도사 언니"; // 여-여
-            } else if (dangbo.gender === '남성' && chung.gender === '여성') {
-                title = "도사 누님"; // 남-여
-            }
-
-            // 2. 대화 시나리오 선택
-            const traitDialogs = dialogDB[dangbo.trait] || dialogDB["능글맞음"];
-            const seasonDialogs = dialogDB.season[getSeason(gameDate.month)] || [];
-            const possibleDialogs = [...traitDialogs, ...seasonDialogs];
-
-            // 3. 랜덤 선택 및 치환
+            const possibleDialogs = [...(dialogDB[dangbo.trait] || []), ...(dialogDB.season[getSeason(gameDate.month)] || [])];
             const scenario = possibleDialogs[Math.floor(Math.random() * possibleDialogs.length)];
+            
+            // 조사 보정 적용
+            const t1 = fillTitle(scenario.t1, title);
+            const t2 = fillTitle(scenario.t2, title);
+            const logMsg = fillTitle(scenario.log, title);
 
-            // {호칭} 부분을 위에서 정한 title로 교체
-            const t1 = scenario.t1.replace(/{호칭}/g, title);
-            const t2 = scenario.t2.replace(/{호칭}/g, title);
-            const logMsg = scenario.log.replace(/{호칭}/g, title);
-
-            showBubble('dangbo', t1);
+            // 당보는 High(왼쪽위), 청명은 Low(오른쪽아래)
+            showBubble('dangbo', t1, 'high');
+            
             setTimeout(() => {
-                showBubble('chung', t2);
+                showBubble('chung', t2, 'low');
                 addLog(`[대화] ${logMsg}`);
-
+                
                 setTimeout(() => {
                     isInteracting = false;
+                    // 대화 끝난 시간 기록 (쿨타임 시작)
+                    lastDialogTime = Date.now();
+                    localStorage.setItem('savedLastDialogTime', lastDialogTime);
+
                     scheduleNextMove('dangbo');
                     scheduleNextMove('chung');
                 }, 2500);
@@ -1171,47 +1286,33 @@
         function triggerMonologue(id) {
             const lines = dialogDB.solo[id];
             if (!lines) return;
-
             let text = lines[Math.floor(Math.random() * lines.length)];
-
-            // 혼잣말에서도 호칭 적용
-            const dangbo = charData['dangbo'];
-            const chung = charData['chung'];
-
-            let title = "도사 형님";
-            if (dangbo.gender === '여성' && chung.gender === '여성') title = "도사 언니";
-            else if (dangbo.gender === '남성' && chung.gender === '여성') title = "도사 누님";
-
-            text = text.replace(/{호칭}/g, title);
-
-            showBubble(id, text);
-        }
-
-        function showBubble(id, text) {
-            const b = document.getElementById(`bubble-${id}`);
-            b.innerText = text;
-            b.classList.add('show');
-            setTimeout(() => b.classList.remove('show'), 3500);
-        }
-
-        function triggerMonologue(id) {
-            const lines = dialogDB.solo[id];
-            if (!lines) return;
-
-            let text = lines[Math.floor(Math.random() * lines.length)];
-
-            // 혼잣말에서도 호칭 치환 (로직 동일)
+            
             const dangbo = charData['dangbo'];
             const chung = charData['chung'];
             let title = "형님";
             if (dangbo.gender === '여성' && chung.gender === '여성') title = "언니";
             else if (dangbo.gender === '남성' && chung.gender === '여성') title = "누님";
+            else if (id === 'dangbo') title = "도사 형님"; // 당보가 말할 때
 
-            text = text.replace(/{호칭}/g, title);
-
+            // 조사 보정 적용
+            text = fillTitle(text, title);
             showBubble(id, text);
         }
 
+        // [추가] 쿨타임 관리
+        let lastDialogTime = parseInt(localStorage.getItem('savedLastDialogTime')) || 0;
+
+        // [추가] 스페셜 이벤트 데이터
+        const specialEventDB = {
+            spring: { title: "⭐️ 종남파 혼내주기", log: "종남의 멍청이들을 두들겨 패줬습니다!", talk: { dangbo: "형님 구역에서 얼쩡거리다니.", chung: "다신 못 오게 다리를 분질러놔!" } },
+            summer: { title: "⭐️ 수박 서리", log: "남의 밭에서 수박을 서리해 먹었습니다.", talk: { dangbo: "역시 훔쳐 먹는 게 제맛이죠.", chung: "아삭하니 좋네!" } },
+            autumn: { title: "⭐️ 술독 도장 깨기", log: "객잔의 술을 모조리 마셔버렸습니다.", talk: { dangbo: "형님, 한 병 더?", chung: "오늘 다 죽는 거야!" } },
+            winter: { title: "⭐️ 설원 비무", log: "눈밭에서 격렬한 비무를 펼쳤습니다.", talk: { dangbo: "손이 곱아서 제대로 못 던지겠소.", chung: "핑계 대지 마라!" } }
+        };
+        
+        
+        
 
         // ================= 테마 및 실행 =================
         const themeToggleBtn = document.getElementById('theme-toggle');
@@ -1226,6 +1327,64 @@
             bodyElement.classList.toggle('dark-theme');
             applyTheme(bodyElement.classList.contains('dark-theme') ? 'dark' : 'light');
         });
+        
+        // [복구] 조사 자동 보정 (은/는, 이/가 등)
+        function fillTitle(text, title) {
+            let result = text.replace(/{호칭}/g, title);
+            const regex = new RegExp(`(${title})(은|는|이|가|을|를|과|와)`, 'g');
+            return result.replace(regex, (match, word, josa) => {
+                const lastChar = word.charCodeAt(word.length - 1);
+                if (lastChar < 0xAC00 || lastChar > 0xD7A3) return match;
+                const hasBatchim = (lastChar - 0xAC00) % 28 > 0;
+                if (josa === '은' || josa === '는') return word + (hasBatchim ? '은' : '는');
+                if (josa === '이' || josa === '가') return word + (hasBatchim ? '이' : '가');
+                if (josa === '을' || josa === '를') return word + (hasBatchim ? '을' : '를');
+                if (josa === '과' || josa === '와') return word + (hasBatchim ? '과' : '와');
+                return match;
+            });
+        }
+
+        // [복구] 배경색에 따라 글자색(흰/검) 결정
+        function getContrastYIQ(hexcolor){
+            if(!hexcolor) return 'black';
+            const r = parseInt(hexcolor.substr(1,2),16);
+            const g = parseInt(hexcolor.substr(3,2),16);
+            const b = parseInt(hexcolor.substr(5,2),16);
+            return (((r*299)+(g*587)+(b*114))/1000) >= 128 ? 'black' : 'white';
+        }
+
+        // [복구] 말풍선 표시 (위치/색상 적용)
+        function showBubble(charId, text, styleType = 'normal') {
+            const d = charData[charId];
+            const charEl = document.getElementById(`char-${charId}`);
+            
+            // 기존 bubble 요소 제거하고 새로 생성 (스타일 충돌 방지)
+            const oldBubble = document.getElementById(`bubble-${charId}`);
+            if(oldBubble) oldBubble.remove();
+
+            const bubble = document.createElement('div');
+            bubble.id = `bubble-${charId}`;
+            bubble.className = 'char-bubble'; // 새로 정의한 CSS 클래스
+            
+            // 색상 적용
+            const bgColor = d.color || "#ffffff";
+            bubble.style.setProperty('--bubble-bg', bgColor);
+            bubble.style.setProperty('--bubble-text', getContrastYIQ(bgColor));
+
+            // 위치 클래스 적용
+            if (styleType === 'high') bubble.classList.add('pos-high');
+            else if (styleType === 'low') bubble.classList.add('pos-low');
+
+            bubble.innerText = text;
+            charEl.appendChild(bubble);
+
+            // 애니메이션
+            requestAnimationFrame(() => bubble.classList.add('show'));
+            setTimeout(() => {
+                bubble.classList.remove('show');
+                setTimeout(() => bubble.remove(), 300);
+            }, 3500);
+        }
 
         window.onload = () => {
             loadCharacterSettings(); // [추가] 저장된 설정 불러오기
