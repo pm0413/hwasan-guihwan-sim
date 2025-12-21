@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 rel: "의형제",
                 desc: "평생을 따를 주군이자 {호칭}."
                 }],
-            img: "character/당보.png",
+            img: "character/당보.gif",
             color: "#4CAF50",
             x: 30,
             y: 60
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 rel: "의형제",
                 desc: "귀찮지만 믿음직한 녀석."
                 }],
-            img: "character/청명.png",
+            img: "character/청명.gif",
             color: "#F44336",
             x: 70,
             y: 60
