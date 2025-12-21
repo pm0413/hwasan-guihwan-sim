@@ -996,7 +996,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (arrivedCount === 2) startDialog();
         };
         // [수정] 모바일일 때는 간격을 8 -> 15 정도로 더 넓게 벌립니다.
-        const gap = window.innerWidth <= 768 ? 15 : 8;
+        const gap = window.innerWidth <= 768 ? 16 : 8;
         moveTo('dangbo', meetX - 8, meetY, onArrive);
         moveTo('chung', meetX + 8, meetY, onArrive);
     }
