@@ -81,7 +81,7 @@
         }
 
         .game-header h1 {
-            font-size: 1.4rem;
+            font-size: 1.25rem;
             margin: 0;
             letter-spacing: -1px;
         }
@@ -130,7 +130,7 @@
         }
 
         .panel h2 {
-            font-size: 1.1rem;
+            font-size: 1.0rem;
             margin: 0;
         }
 
@@ -163,7 +163,7 @@
             cursor: pointer;
             border-radius: 4px;
             font-family: 'JoseonGulim';
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         .char-select-btn.active {
@@ -185,7 +185,7 @@
             border-bottom: 3px solid transparent;
             color: var(--text-secondary);
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-family: 'JoseonGulim';
         }
 
@@ -198,7 +198,7 @@
         .info-content {
             flex: 1;
             overflow-y: auto;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             line-height: 1.6;
         }
 
@@ -214,7 +214,7 @@
         .info-label {
             display: block;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             margin-bottom: 4px;
         }
@@ -312,9 +312,9 @@
 
         .bubble {
             background: white;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 15px;
-            font-size: 14px;
+            font-size: 13px;
             position: absolute;
             bottom: 100%;
             margin-bottom: 8px;
@@ -369,10 +369,10 @@
 
         /* 개별 로그 카드 (공통 디자인) */
         .log-entry {
-            padding: 8px 10px;
-            margin-bottom: 6px;
+            padding: 6px 8px;
+            margin-bottom: 5px;
             border-radius: 4px;
-            font-size: 0.85rem;
+            font-size: 0.72rem;
             line-height: 1.4;
 
             /* 카드 스타일 핵심 */
@@ -389,11 +389,18 @@
 
         /* 시간 표시 스타일 */
         .log-time {
-            color: #999;
-            font-size: 0.75rem;
-            margin-right: 6px;
+            display: block;
+            /* [핵심] 시간을 블록 요소로 만들어 줄바꿈 처리 */
+            margin-bottom: 5px;
+            /* 내용과 시간 사이의 간격 추가 */
+            color: #aaa;
+            /* 색상을 조금 더 연하게 */
+            font-size: 0.7rem;
             font-weight: normal;
             letter-spacing: -0.5px;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
+            /* (선택) 시간 아래 아주 연한 구분선 */
+            padding-bottom: 3px;
         }
 
         /* === 상황별 컬러 스타일 === */
@@ -491,10 +498,10 @@
 
             /* 개별 로그 카드 (공통 디자인) */
             .log-entry {
-                padding: 8px 10px;
-                margin-bottom: 6px;
+                padding: 6px 8px;
+                margin-bottom: 5px;
                 border-radius: 4px;
-                font-size: 0.85rem;
+                font-size: 0.8rem;
                 line-height: 1.4;
                 background: var(--bg-panel);
                 /* 카드 배경색 */
@@ -510,13 +517,17 @@
                 transform: translateX(2px);
             }
 
-            /* 시간 표시 스타일 */
+            /* [수정] 모바일에서는 시간과 내용을 한 줄로 표시 */
             .log-time {
-                color: #999;
-                font-size: 0.75rem;
+                display: inline-block !important;
+                /* 강제로 인라인 블록 */
+                margin-bottom: 0 !important;
+                /* 아래 여백 제거 */
                 margin-right: 6px;
-                font-weight: normal;
-                letter-spacing: -0.5px;
+                /* 오른쪽 여백 추가 */
+                border-bottom: none !important;
+                /* 구분선 제거 */
+                padding-bottom: 0 !important;
             }
 
             /* === 상황별 컬러 스타일 (보내주신 파일 참고) === */
@@ -552,6 +563,37 @@
                 box-shadow: none;
                 border-bottom: 1px solid #333;
             }
+        }
+
+
+        /* 저장 버튼 스타일 */
+        .save-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-family: 'JoseonGulim';
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            opacity: 0.9;
+        }
+
+
+        .custom-select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            font-family: 'JoseonGulim';
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -611,8 +653,8 @@
             'dangbo': {
                 name: "당보",
                 title: "암존(暗尊)",
-                desc: "사천당가의 태상장로이자 당가의 전설.<br>형님(청명)을 지극히 따른다.",
-                quote: "형님, 술 한잔 하시죠!",
+                gender: "남성", // 기본값: 남성
+                trait: "능글맞음", // 기본값: 능글맞음
                 inventory: ["비도 x12", "독병", "최고급 술"],
                 relations: [{
                     target: "청명",
@@ -627,8 +669,8 @@
             'chung': {
                 name: "청명",
                 title: "매화검존(梅花劍尊)",
-                desc: "구화산의 전설이자 천하삼대검수.<br>성격은 개차반이지만 실력은 확실하다.",
-                quote: "이놈의 도사들이 빠져가지고!",
+                gender: "남성", // 기본값: 남성
+                trait: "무던함", // 기본값: 무던함
                 inventory: ["매화검", "당과", "군만두"],
                 relations: [{
                     target: "당보",
@@ -642,10 +684,13 @@
             }
         };
 
+        // 성격 목록 (나중에 여기에 "집착함" 등을 추가하면 됩니다)
+        const personalityList = ["능글맞음", "무던함", "질투많음"];
+
         const dialogDB = {
-            // 1. 공통 상호작용 (계절 상관없이 평소에 하는 대화)
-            common: [{
-                    t1: "형님, 술맛이 아주 좋습니다!",
+            // 1. 능글맞음 (당보 기본 성격)
+            "능글맞음": [{
+                    t1: "{호칭}, 술맛이 아주 좋습니다!",
                     t2: "시끄러, 잔이나 채워.",
                     log: "술을 나눠 마십니다."
                 },
@@ -655,12 +700,7 @@
                     log: "후기지수 뒷담화를 합니다."
                 },
                 {
-                    t1: "(비도를 만지작거림)",
-                    t2: "넣어라. 눈 찔린다.",
-                    log: "무기를 손질합니다."
-                },
-                {
-                    t1: "형님, 저랑 비무나 한 판?",
+                    t1: "{호칭}, 저랑 비무나 한 판?",
                     t2: "대가리 깨지고 싶냐?",
                     log: "비무를 제안했다가 거절당합니다."
                 },
@@ -671,68 +711,60 @@
                 }
             ],
 
-            // 2. 계절별 상호작용 (현재 계절에 따라 추가되는 대화)
-            season: {
+            // 2. 무던함 (청명 기본 성격 - 당보가 무던할 때의 대사 예시)
+            "무던함": [{
+                    t1: "{호칭}, 날씨가 좋네요.",
+                    t2: "그러게 말이다.",
+                    log: "함께 하늘을 바라봅니다."
+                },
+                {
+                    t1: "수련은 잘 돼가십니까?",
+                    t2: "그냥 하는 거지 뭐.",
+                    log: "수련 이야기를 합니다."
+                }
+            ],
+
+            // 3. 질투많음 (새로 추가된 성격)
+            "질투많음": [{
+                    t1: "{호칭}, 아까 그놈 누굽니까?",
+                    t2: "지나가는 개다.",
+                    log: "질투를 합니다."
+                },
+                {
+                    t1: "저만 보십쇼, {호칭}.",
+                    t2: "징그럽게 왜 이래?",
+                    log: "부담스러운 눈빛을 보냅니다."
+                }
+            ],
+
+            // 4. 계절 대사 (성격 무관 공통)
+            "season": {
                 spring: [{
-                        t1: "매화가 흐드러지게 폈습니다, 형님.",
-                        t2: "술맛 돋우는군.",
-                        log: "꽃구경을 하며 술을 마십니다."
-                    },
-                    {
-                        t1: "따뜻하니 잠이 솔솔 옵니다.",
-                        t2: "자빠져 자지 말고 수련해!",
-                        log: "춘곤증을 이기지 못합니다."
-                    }
-                ],
+                    t1: "매화가 흐드러지게 폈습니다, {호칭}.",
+                    t2: "술맛 돋우는군.",
+                    log: "꽃구경을 하며 술을 마십니다."
+                }],
                 summer: [{
-                        t1: "더워 죽겠습니다... 헥헥.",
-                        t2: "도사가 더위를 타서야 원.",
-                        log: "무더위에 지쳐갑니다."
-                    },
-                    {
-                        t1: "계곡에 발 담그고 싶지 않으십니까?",
-                        t2: "오, 그거 좋은데?",
-                        log: "피서를 계획합니다."
-                    }
-                ],
+                    t1: "더워 죽겠습니다... 헥헥.",
+                    t2: "도사가 더위를 타서야 원.",
+                    log: "무더위에 지쳐갑니다."
+                }],
                 autumn: [{
-                        t1: "낙엽이 지니 쓸쓸하군요.",
-                        t2: "청승 떨지 마라.",
-                        log: "가을 타는 중입니다."
-                    },
-                    {
-                        t1: "형님, 전어가 제철입니다.",
-                        t2: "당장 가져와.",
-                        log: "제철 음식을 논합니다."
-                    }
-                ],
+                    t1: "낙엽이 지니 쓸쓸하군요.",
+                    t2: "청승 떨지 마라.",
+                    log: "가을 타는 중입니다."
+                }],
                 winter: [{
-                        t1: "술이 얼겠습니다, 형님.",
-                        t2: "데워 마시면 그만이다.",
-                        log: "추위를 술로 달랩니다."
-                    },
-                    {
-                        t1: "눈이 쌓이니 화산이 더 절경이군요.",
-                        t2: "치울 생각 하니 끔찍하다.",
-                        log: "제설 작업을 걱정합니다."
-                    }
-                ]
+                    t1: "술이 얼겠습니다, {호칭}.",
+                    t2: "데워 마시면 그만이다.",
+                    log: "추위를 술로 달랩니다."
+                }]
             },
 
-            // 3. 혼잣말 (이동하다가 혼자 중얼거림)
+            // 5. 혼잣말
             solo: {
-                dangbo: [
-                    "형님은 오늘도 기운이 넘치시는군.",
-                    "독을 좀 더 개량해볼까...",
-                    "비도 닦기 좋은 날씨다.",
-                    "화산의 매화주는 일품이란 말이지."
-                ],
-                chung: [
-                    "아오, 삭신이야.",
-                    "당과가 다 떨어졌는데...",
-                    "이놈의 도사들이 빠져가지고!",
-                    "술 가져와, 술!"
-                ]
+                dangbo: ["{호칭}은 오늘도 기운이 넘치시는군.", "독을 좀 더 개량해볼까...", "비도 닦기 좋은 날씨다."],
+                chung: ["아오, 삭신이야.", "당과가 다 떨어졌는데...", "술 가져와, 술!"]
             },
 
             // 4. 유람 시스템 전용 (나중에 유람 기능 추가 시 사용)
@@ -876,6 +908,10 @@
             let html = '';
 
             if (currentTab === 'profile') {
+                const traitOptions = personalityList.map(p =>
+                    `<option value="${p}" ${data.trait === p ? 'selected' : ''}>${p}</option>`
+                ).join('');
+
                 html = `
                     <div style="text-align:center; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #eee;">
                         <h2 style="color:${data.color}; margin-bottom:5px;">${data.name}</h2>
@@ -883,14 +919,21 @@
                     </div>
                     
                     <div class="info-box">
-                        <span class="info-label">📝 인물 소개</span>
-                        <div style="line-height:1.5; color:#444;">${data.desc}</div>
+                        <span class="info-label">⚧ 성별 설정</span>
+                        <select class="custom-select" onchange="updateCharSetting('gender', this.value)">
+                            <option value="남성" ${data.gender === '남성' ? 'selected' : ''}>남성 ♂️</option>
+                            <option value="여성" ${data.gender === '여성' ? 'selected' : ''}>여성 ♀️</option>
+                        </select>
                     </div>
 
                     <div class="info-box">
-                        <span class="info-label">💬 대표 대사</span>
-                        <div class="quote-text">"${data.quote}"</div>
+                        <span class="info-label">🧠 성격 설정</span>
+                        <select class="custom-select" onchange="updateCharSetting('trait', this.value)">
+                            ${traitOptions}
+                        </select>
                     </div>
+
+                    <button class="save-btn" onclick="saveCharacterSettings()">💾 설정 저장하기</button>
                 `;
             } else if (currentTab === 'inventory') {
                 html = `<div style="padding:5px;">
@@ -910,6 +953,35 @@
                         </div>`;
             }
             display.innerHTML = html;
+        }
+
+        // [중요] 저장 및 불러오기 함수 추가
+        function saveCharacterSettings() {
+            // 현재 charData 전체를 로컬스토리지에 저장
+            localStorage.setItem('hapsa_char_settings', JSON.stringify(charData));
+            alert("캐릭터 성별과 성격이 저장되었습니다!");
+        }
+
+        function loadCharacterSettings() {
+            const saved = localStorage.getItem('hapsa_char_settings');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // 저장된 데이터가 있으면 덮어쓰기
+                Object.keys(parsed).forEach(key => {
+                    if (charData[key]) {
+                        charData[key].gender = parsed[key].gender;
+                        charData[key].trait = parsed[key].trait;
+                    }
+                });
+            }
+        }
+
+        // 설정 저장용 헬퍼 함수
+        function updateCharSetting(key, value) {
+            if (charData[currentUserId]) {
+                charData[currentUserId][key] = value;
+                // 성격이 바뀌면 다음 대화부터 즉시 적용됩니다.
+            }
         }
 
         function addLog(msg, isSpecial = false) {
@@ -1058,23 +1130,35 @@
         }
 
         function startDialog() {
-            // 1. 현재 계절 가져오기
-            const currentSeason = getSeason(gameDate.month);
+            const dangbo = charData['dangbo'];
+            const chung = charData['chung'];
 
-            // 2. 공통 대화 + 현재 계절 대화 합치기
-            // (만약 해당 계절 대사가 없으면 공통 대화만 사용)
-            const possibleDialogs = [
-                ...dialogDB.common,
-                ...(dialogDB.season[currentSeason] || [])
-            ];
+            // 1. 호칭 결정 로직 ([도사] 꼭 포함!)
+            let title = "도사 형님"; // 기본값 (남-남, 여-남)
 
-            // 3. 랜덤 선택
+            if (dangbo.gender === '여성' && chung.gender === '여성') {
+                title = "도사 언니"; // 여-여
+            } else if (dangbo.gender === '남성' && chung.gender === '여성') {
+                title = "도사 누님"; // 남-여
+            }
+
+            // 2. 대화 시나리오 선택
+            const traitDialogs = dialogDB[dangbo.trait] || dialogDB["능글맞음"];
+            const seasonDialogs = dialogDB.season[getSeason(gameDate.month)] || [];
+            const possibleDialogs = [...traitDialogs, ...seasonDialogs];
+
+            // 3. 랜덤 선택 및 치환
             const scenario = possibleDialogs[Math.floor(Math.random() * possibleDialogs.length)];
 
-            showBubble('dangbo', scenario.t1);
+            // {호칭} 부분을 위에서 정한 title로 교체
+            const t1 = scenario.t1.replace(/{호칭}/g, title);
+            const t2 = scenario.t2.replace(/{호칭}/g, title);
+            const logMsg = scenario.log.replace(/{호칭}/g, title);
+
+            showBubble('dangbo', t1);
             setTimeout(() => {
-                showBubble('chung', scenario.t2);
-                addLog(`[대화] ${scenario.log}`);
+                showBubble('chung', t2);
+                addLog(`[대화] ${logMsg}`);
 
                 setTimeout(() => {
                     isInteracting = false;
@@ -1082,6 +1166,25 @@
                     scheduleNextMove('chung');
                 }, 2500);
             }, 2000);
+        }
+
+        function triggerMonologue(id) {
+            const lines = dialogDB.solo[id];
+            if (!lines) return;
+
+            let text = lines[Math.floor(Math.random() * lines.length)];
+
+            // 혼잣말에서도 호칭 적용
+            const dangbo = charData['dangbo'];
+            const chung = charData['chung'];
+
+            let title = "도사 형님";
+            if (dangbo.gender === '여성' && chung.gender === '여성') title = "도사 언니";
+            else if (dangbo.gender === '남성' && chung.gender === '여성') title = "도사 누님";
+
+            text = text.replace(/{호칭}/g, title);
+
+            showBubble(id, text);
         }
 
         function showBubble(id, text) {
@@ -1092,15 +1195,21 @@
         }
 
         function triggerMonologue(id) {
-            // 해당 캐릭터의 혼잣말 리스트 가져오기
             const lines = dialogDB.solo[id];
             if (!lines) return;
 
-            const text = lines[Math.floor(Math.random() * lines.length)];
-            showBubble(id, text);
+            let text = lines[Math.floor(Math.random() * lines.length)];
 
-            // 로그에도 남길지 말지는 선택 (여기선 버블만 띄우고 로그는 안 남김, 너무 시끄러울까봐)
-            // 만약 로그도 남기고 싶다면: addLog(`[독백] ${charData[id].name}: "${text}"`);
+            // 혼잣말에서도 호칭 치환 (로직 동일)
+            const dangbo = charData['dangbo'];
+            const chung = charData['chung'];
+            let title = "형님";
+            if (dangbo.gender === '여성' && chung.gender === '여성') title = "언니";
+            else if (dangbo.gender === '남성' && chung.gender === '여성') title = "누님";
+
+            text = text.replace(/{호칭}/g, title);
+
+            showBubble(id, text);
         }
 
 
@@ -1119,10 +1228,11 @@
         });
 
         window.onload = () => {
+            loadCharacterSettings(); // [추가] 저장된 설정 불러오기
             renderInfoContent();
             initCharacters();
-            updateDateUI(); // 초기 날짜 UI 설정
-            updateTime(); // 시간 타이머 시작
+            updateDateUI();
+            updateTime();
         };
     </script>
 </body></html>
