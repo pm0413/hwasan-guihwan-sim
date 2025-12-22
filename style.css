@@ -666,9 +666,11 @@ body.dark-theme .log-special {
     border-radius: 10px;
     padding: 8px 12px;
     font-size: 12px;
-    width: max-content;     
-    max-width: 200px;         /* [수정] 화면 가로폭의 40% 이상 커지지 않게 제한 */
-    min-width: 80px;         /* [추가] 너무 짧아지는 것 방지 */
+    width: max-content;
+    max-width: 200px;
+    /* [수정] 화면 가로폭의 40% 이상 커지지 않게 제한 */
+    min-width: 80px;
+    /* [추가] 너무 짧아지는 것 방지 */
     white-space: normal;
     word-break: keep-all;
     line-height: 1.4;
@@ -773,4 +775,261 @@ body.dark-theme .log-special {
 
 .modal-content button:hover {
     opacity: 0.9;
+}
+
+
+/* =========================================
+   [🎒 인벤토리 스타일 - 리뉴얼]
+   ========================================= */
+
+/* 1. 상단 상세 보기 창 (카드 형태) */
+.item-detail-view {
+    background: var(--bg-panel);
+    /* 패널 배경색 */
+    border-radius: 16px;
+    /* 더 둥글게 */
+    padding: 20px;
+    margin-bottom: 20px;
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    /* 테두리 대신 부드러운 그림자로 입체감 부여 */
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08),
+        inset 0 1px 2px rgba(255, 255, 255, 0.5);
+    /* 상단 하이라이트 */
+    transition: all 0.3s ease;
+}
+
+/* 상세 창 내부 아이콘 박스 (이모지용 수정) */
+.detail-icon {
+    font-size: 64px !important; /* 이모지는 폰트보다 작아 보여서 훨씬 크게 키움 */
+    /* color: var(--accent-color); 삭제 -> 이모지 고유 색상 사용 */
+    
+    /* 아이콘 배경 원형 디자인은 유지 */
+    /*background: color-mix(in srgb, var(--accent-color) 10%, transparent); */
+    padding: 12px;
+    border-radius: 50%;
+    /*border: 2px solid color-mix(in srgb, var(--accent-color) 30%, transparent);*/
+    min-width: 90px; /* 크기 증가 */
+    height: 90px;    /* 크기 증가 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /*box-shadow: 0 4px 8px rgba(0,0,0,0.05);*/
+    
+    /* 이모지 수직 정렬 보정 */
+    line-height: 1; 
+}
+
+/* 상세 창 텍스트 영역 */
+.detail-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.detail-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    /* 더 두껍게 */
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
+
+.detail-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    word-break: keep-all;
+    opacity: 0.9;
+}
+
+/* =========================================
+   [🎒 인벤토리 스타일 - 최종 수정 (클래스 타격)]
+   ========================================= */
+
+/* 인벤토리 전체 영역 (JS가 이 클래스를 만듭니다) */
+.inventory-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; /* 가로 4칸 강제 */
+    gap: 8px; /* 사이 간격 */
+    padding: 10px;
+    margin-top: 10px;
+    
+    /* 심플한 배경 박스 */
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
+}
+
+/* 개별 아이템 네모 칸 */
+.item-slot {
+    /* 1:1 정사각형 비율 유지 */
+    aspect-ratio: 1 / 1;
+    width: auto !important; 
+    height: auto !important;
+    
+    /* 모던한 디자인 */
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 마우스 올렸을 때 */
+.item-slot:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-color);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* 선택된 아이템 */
+.item-slot.selected {
+    border: 2px solid var(--accent-color);
+    background-color: rgba(76, 175, 80, 0.05);
+}
+
+/* 빈 슬롯 (점선 처리) */
+.item-slot.empty {
+    background-color: transparent;
+    border: 1px dashed rgba(0,0,0,0.1);
+    box-shadow: none;
+    cursor: default;
+}
+.item-slot.empty:hover {
+    transform: none;
+    border-color: rgba(0,0,0,0.1);
+}
+
+/* 아이템 아이콘 (이모지) */
+.item-slot .item-icon-emoji {
+    font-size: 1.5rem; /* 칸 크기에 맞춰 적절히 조절 */
+    line-height: 1;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+}
+
+/* 아이템 이름 숨기기 (심플함을 위해 아이콘만 표시하고 이름은 생략) */
+.item-slot .item-name {
+    display: none; 
+}
+
+/* 개수 표시 배지 (우측 하단) */
+.item-count {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: var(--accent-color);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 6px;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+
+
+/* [관계도 수정 기능 스타일] */
+.rel-card {
+    position: relative;
+    /* 버튼 위치 잡기 위해 */
+    transition: all 0.3s;
+}
+
+/* 1. 뷰 모드 (평소 상태) */
+.rel-view-mode {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.rel-desc-text {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    /* 줄바꿈 유지 */
+    flex: 1;
+}
+
+/* 수정 버튼 (연필 아이콘) */
+.btn-edit-rel {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+    font-size: 1.1rem;
+    padding: 0;
+}
+
+.rel-card:hover .btn-edit-rel {
+    opacity: 1;
+    /* 마우스 올렸을 때만 선명하게 */
+}
+
+/* 2. 에디트 모드 (수정 상태) */
+.rel-edit-mode {
+    display: none;
+    /* 기본 숨김 */
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+/* 텍스트 영역 스타일 (투박한 박스 제거) */
+.rel-edit-input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid var(--accent-color);
+    /* 밑줄만 표시 */
+    background: rgba(0, 0, 0, 0.02);
+    font-family: 'JoseonGulim';
+    font-size: 0.9rem;
+    padding: 5px;
+    resize: none;
+    /* 크기 조절 끄기 */
+    outline: none;
+    min-height: 60px;
+    color: var(--text-primary);
+    border-radius: 4px 4px 0 0;
+}
+
+/* 버튼 그룹 */
+.rel-btn-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.btn-save-rel {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.btn-cancel-rel {
+    background: #999;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
 }
