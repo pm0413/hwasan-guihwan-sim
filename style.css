@@ -6,6 +6,18 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'MuseumCulturalFoundationClassic';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/국립박물관문화재단클래식L.woff') format('woff');
+    font-weight: 300;
+    font-display: swap;
+}
+
+/* 2. 이름과 칭호에 적용할 스타일 클래스 만들기 */
+.char-signature-font {
+    font-family: 'MuseumCulturalFoundationClassic', serif;
+}
+
 /* ================= CSS 변수 ================= */
 :root {
     --bg-body: #f0f2f5;
@@ -641,7 +653,7 @@ body.dark-theme .log-special {
     color: #ffecb3 !important;
 }
 
-/* [3] 커스텀 말풍선 (기존 .bubble 대체) */
+/* [기본 말풍선 스타일] */
 .char-bubble {
     position: absolute;
     bottom: 110%;
@@ -655,7 +667,7 @@ body.dark-theme .log-special {
     padding: 8px 12px;
     font-size: 12px;
     width: max-content;     
-    max-width: 40vw;         /* [수정] 화면 가로폭의 40% 이상 커지지 않게 제한 */
+    max-width: 200px;         /* [수정] 화면 가로폭의 40% 이상 커지지 않게 제한 */
     min-width: 80px;         /* [추가] 너무 짧아지는 것 방지 */
     white-space: normal;
     word-break: keep-all;
@@ -685,29 +697,18 @@ body.dark-theme .log-special {
     border-color: var(--bubble-bg, #ffffff) transparent transparent transparent;
 }
 
-/* [당보용 스타일] 높게, 왼쪽으로 치우침 */
-.char-bubble.pos-high {
-    bottom: 100%;
-    transform: translateX(-80%) !important;
-    /* 왼쪽으로 밀기 */
-    border-bottom-right-radius: 0;
+/* 1. 캐릭터가 화면 왼쪽(Left)에 있을 때 */
+/* 말풍선도 왼쪽(-60%)으로 살짝 치우침 (캐릭터 머리 위 왼쪽) */
+.char-bubble.is-left {
+    transform: translateX(-70%);
 }
 
-.char-bubble.pos-high::after {
-    left: 80%;
+/* 2. 캐릭터가 화면 오른쪽(Right)에 있을 때 */
+/* 말풍선도 오른쪽(-40%)으로 살짝 치우침 (캐릭터 머리 위 오른쪽) */
+.char-bubble.is-right {
+    transform: translateX(-30%);
 }
 
-/* [청명용 스타일] 낮게, 오른쪽으로 치우침 */
-.char-bubble.pos-low {
-    bottom: 100%;
-    transform: translateX(-20%) !important;
-    /* 오른쪽으로 밀기 */
-    border-bottom-left-radius: 0;
-}
-
-.char-bubble.pos-low::after {
-    left: 20%;
-}
 
 
 /* [추가] 디버그 버튼 스타일 */
