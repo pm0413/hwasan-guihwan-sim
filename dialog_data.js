@@ -701,6 +701,9 @@ const dialogDB = {
             // 1. 그냥 평범한 혼잣말 (기존 방식)
             "{호칭}은 오늘도 기운이 넘치시는군.",
             "{호칭}께 독먹이기 딱 좋은 날씨네",
+            "장안 저잣거리에 새로 들어온 소흥주가 그리 좋다던데...",
+            "비도가 무거워지는 걸 보니... 형님이 사고 칠 징조인가.",
+            "형님 성미에 도사 노릇 하시느라 고생이 참 많으십니다.",
 
             // 2. [득템] 자소단을 줍는 혼잣말
             {
@@ -712,20 +715,91 @@ const dialogDB = {
             {
                 t: "크으, 날씨 좋고! 술맛 좋고!",
                 action: () => useItem('dangbo', 'dukangju')
+            },
+            {
+                t: "형님! 제가 아껴둔 두강주 한 잔 하시겠습니까? (품을 뒤적인다)",
+                action: () => {
+                    // 1. 당보의 가방에서 두강주를 사용(삭제) 시도
+                    const hasItem = useItem('dangbo', 'dukangju');
+
+                    if (hasItem) {
+                        // [아이템이 있을 때] 청명에게 건네주고 로그 출력
+                        addItem('chung', 'dukangju');
+                        addLog("[교환] 당보가 소중히 챙겨온 두강주를 청명에게 바쳤습니다.", false, null, 'purple');
+                        charData.dangbo.intimacy += 10; // 선물했으니 친밀도 상승
+                    } else {
+                        // [아이템이 없을 때] 빈손임을 깨닫는 로그만 출력
+                        addLog("[관찰] 당보가 품을 뒤적였으나 두강주가 보이지 않자 머쓱하게 웃습니다.", false);
+                    }
+
+                    saveCharacterSettings(true);
+                    renderInfoContent();
+                }
             }
         ],
         chung: [
             "아오, 삭신이야.",
             "당과가 다 떨어졌는데...",
+            "{호칭} 소리 좀 그만해라. 귀에 딱지 앉겠다, 이놈아.",
+            "구박받는 게 취미냐? 왜 자꾸 매를 벌어, 이 멍청아.",
+            "야, 너 또 암기 닦고 있냐? 그만 좀 닦아, 눈 부시니까.",
+            "어디서 고소한 냄새 안 나냐? 당보야, 너 뭐 숨겨둔 거 없지?",
 
             {
-                t: "(당과를 얻어왔다)",
+                t: "어디서 단 냄새가 난다 했더니... (당과를 슥 챙긴다)",
                 action: () => addItem('chung', 'dang_gwa')
+            },
+            {
+                t: "입안이 심심하네. 아까 챙겨둔 게 어디 있더라? (냠냠)",
+                action: () => useItem('chung', 'dang_gwa')
             },
             {
                 t: "(냠냠)",
                 action: () => useItem('chung', 'dang_gwa')
-            }
+            },
+            {
+                t: "몸이 예전 같지 않구먼. 미리미리 챙겨 먹어야지. (자소단을 삼킨다)",
+                action: () => {
+                    useItem('chung', 'jasodan');
+                }
+            },
+            {
+                t: "크으, 역시 술은 남이 사주는... 아니, 몰래 마시는 술이 최고지! (꿀꺽)",
+                action: () => {
+                    // 술 관련 아이템이 있다면 사용, 없다면 친밀도 상승으로 대체 가능
+                    charData.chung.intimacy += 5;
+                    useItem('chung', 'dukangju');
+                    saveCharacterSettings(true);
+                    renderInfoContent();
+                }
+            },
+            {
+                t: "돈이 있으면 뭐 해. 내 목구멍이 포도청인데! (전낭을 털어 술을 주문한다)",
+                action: () => {
+                    if (useItem('chung', 'anterior_sac')) {
+                        addLog("[사용] 청명이 전낭을 털어 가장 비싼 독주를 주문했습니다.", false, null, 'purple');
+                        charData.chung.intimacy += 10; // 기분이 좋아져 친밀도 상승
+                    }
+                    saveCharacterSettings(true);
+                    renderInfoContent();
+                }
+},
+            {
+                t: "당보야, 이 전낭 안에 든 게 다 은자였으면 좋겠지? 나도 그렇다.",
+                action: () => {
+                    // 대화 후 친밀도만 약간 상승
+                    charData.chung.intimacy += 5;
+                    saveCharacterSettings(true);
+                    renderInfoContent();
+                }
+},
+            {
+                t: "아니, 전낭이 왜 이렇게 가벼워? 분명 아까까진 묵직했는데... (당보를 의심스럽게 쳐다본다)",
+                action: () => {
+                    // 아이템 소모 없이 로그만 출력
+                    addLog("[관찰] 청명이 빈 전낭을 흔들며 허망한 표정을 짓습니다.", false);
+                }
+}
         ]
     }
 };

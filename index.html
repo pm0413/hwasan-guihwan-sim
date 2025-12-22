@@ -64,23 +64,42 @@
             <h2 id="popup-title">이벤트 제목</h2>
             <p id="popup-desc">이벤트 내용</p>
         </div>
+
+        <div id="trip-modal" class="modal-overlay">
+            <div class="modal-content" style="width:400px;">
+                <h3>어디로 유람을 떠날까요?</h3>
+                <div id="trip-grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; margin:20px 0;">
+                </div>
+                <button onclick="closeTripModal()" style="background:#666;">닫기</button>
+            </div>
+        </div>
+
     </main>
 
     <div id="debug-modal" class="modal-overlay">
         <div class="modal-content">
             <h3>🔧 관리자 메뉴 (DEBUG)</h3>
+
             <div style="margin: 20px 0; display:flex; gap:10px; justify-content:center; align-items:center;">
                 <input type="number" id="debug-month" min="1" max="12" style="width:50px; padding:5px;"> 월
                 <input type="number" id="debug-day" min="1" max="30" style="width:50px; padding:5px;"> 일
             </div>
-            <div style="display:flex; gap:10px; justify-content:center;">
+            <div style="display:flex; gap:10px; justify-content:center; margin-bottom: 20px;">
                 <button onclick="warpDate()" style="background:#2196F3;">이동하기</button>
                 <button onclick="toggleDebugMenu()" style="background:#666;">닫기</button>
             </div>
-            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ccc;">
+
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
+                <p style="font-weight:bold; color:#673AB7; margin-bottom:10px;">⚡ 시스템 치트</p>
+                <button onclick="addDebugIntimacy()" style="width:100%; padding:10px; background:#673AB7; color:white; border:none; border-radius:5px; cursor:pointer;">
+                    ➕ 당보 & 청명 친밀도 +400
+                </button>
+            </div>
+
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
                 <p style="font-weight:bold; color:#d32f2f; margin-bottom:5px;">⚠️ 데이터 초기화</p>
                 <button onclick="resetGameData()" style="width:100%; padding:10px; background:#d32f2f; color:white; border:none; border-radius:5px; cursor:pointer;">
-                    🔄 모든 관계 및 날짜 초기화 (3월 1일)
+                    🔄 모든 데이터 초기화 (새로고침)
                 </button>
             </div>
         </div>
@@ -88,6 +107,10 @@
 
     <script src="dialog_data.js"></script>
     <script src="item_data.js"></script>
+    <script src="event_data.js"></script>
+    <script src="trip_data.js"></script>
     <script src="script.js"></script>
 
-</body></html>
+</body>
+
+</html>

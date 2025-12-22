@@ -392,6 +392,32 @@ body {
     transform: translateX(2px);
 }
 
+/* [이벤트] 로그 전용 연두색 스타일 */
+.log-entry.log-system span[style*="font-weight:bold;"] {
+    /* [이벤트] 글자색 변경 */
+}
+
+/* [이벤트] 문구가 포함된 로그 전체 배경 및 테두리 */
+.log-entry:has(span:contains("[이벤트]")) {
+    background-color: rgba(139, 195, 74, 0.05) !important;
+    border-left: 4px solid #8BC34A !important;
+    /* 연두색 포인트 */
+}
+
+/* 텍스트 내 [이벤트] 강조색 */
+.log-entry span b,
+.log-entry span strong {
+    color: #689F38;
+    /* 진한 연두색 */
+}
+
+/* 다크모드 대응 */
+body.dark-theme .log-entry:has(span:contains("[이벤트]")) {
+    background-color: rgba(139, 195, 74, 0.1) !important;
+    border-left: 4px solid #9CCC65 !important;
+    color: #dcedc8 !important;
+}
+
 /* 시간 표시 스타일 */
 .log-time {
     display: block;
@@ -933,6 +959,10 @@ body.dark-theme .log-special {
     /* 사이 간격 */
     padding: 10px;
     margin-top: 10px;
+    max-height: 440px;
+    /* 적절한 높이 설정 */
+    overflow-y: auto;
+    /* 세로 스크롤 허용 */
 
     /* 심플한 배경 박스 */
     background: rgba(0, 0, 0, 0.03);
@@ -1107,4 +1137,46 @@ body.dark-theme .log-special {
     border-radius: 4px;
     font-size: 0.8rem;
     cursor: pointer;
+}
+
+
+
+/* trip-btn 기본 스타일 */
+.trip-btn {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* 정사각형 유지 */
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.trip-btn:hover {
+    border-color: #673AB7 !important;
+    /* 마우스 올리면 보라색 테두리 */
+}
+
+/* 유람 시 배경을 흐리게 만드는 스타일 */
+#game-bg.trip-blur {
+    filter: blur(5px) brightness(0.7);
+    /* 5px 흐림, 밝기 70% */
+    transition: filter 0.8s ease;
+    /* 부드러운 전환 */
+}
+
+/* [style.css] 황금색 로그 스타일 */
+.log-special {
+    background-color: #fff8e1 !important;
+    /* 연한 황금빛 배경 */
+    border-left: 4px solid #FFC107 !important;
+    /* 진한 황금색 테두리 */
+    color: #5d4037 !important;
+    /* 진한 갈색 글씨 */
+    font-weight: bold;
+}
+
+/* 다크모드일 때 황금색 로그 */
+body.dark-theme .log-special {
+    background-color: #4e342e !important;
+    color: #ffecb3 !important;
+    border-left: 4px solid #FFC107 !important;
 }

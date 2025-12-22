@@ -133,47 +133,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return false;
     }
 
-    // [스페셜 이벤트 데이터]
-    const specialEventDB = {
-        spring: {
-            title: "⭐️ 종남파 혼내주기",
-            log: "종남의 멍청이들을 혼내주고 전리품을 챙겼습니다!",
-            talk: {
-                dangbo: "형님, 이거 비싼 술 같은데요?",
-                chung: "오냐, 잘 챙겨놔라."
-            },
-            action: () => addItem('chung', 'dukangju')
-        },
-        summer: {
-            title: "⭐️ 수박 서리",
-            log: "너무 더워서 가지고 있던 자소단을 먹...으려다 참았습니다.",
-            talk: {
-                dangbo: "그걸 왜 드십니까? 수박이나 드쇼.",
-                chung: "아까워서 그런다, 아까워서!"
-            },
-            action: () => addItem('dangbo', 'jasodan')
-        },
-        autumn: {
-            title: "⭐️ 술독 도장 깨기",
-            log: "가을바람이 좋아 술을 한 잔 걸쳤습니다.",
-            talk: {
-                dangbo: "캬, 역시 두강주가 최고입니다.",
-                chung: "야, 내 것도 남겨놔!"
-            },
-            action: () => useItem('chung', 'dukangju') || useItem('dangbo', 'dukangju')
-        },
-        winter: {
-            title: "⭐️ 설원 비무",
-            log: "비무 도중 비도가 손상되었습니다.",
-            talk: {
-                dangbo: "아이고, 내 추혼비가...!",
-                chung: "대장간 가서 고쳐, 임마."
-            },
-            action: () => {
-                /* 아이템 변동 없음 */ }
-        }
-    };
-
     // ================= 2. 캐릭터 데이터 =================
     const charData = {
         'dangbo': {
@@ -272,27 +231,45 @@ document.addEventListener("DOMContentLoaded", function () {
         updateDateUI();
     }
 
+    // [script.js] triggerSpecialEvent 함수 수정
     function triggerSpecialEvent() {
         const season = getSeason(gameDate.month);
-        const data = specialEventDB[season];
-        if (!data) return;
+
+        // 1. 공통 이벤트와 현재 계절 이벤트를 합칩니다.
+        const commonEvents = specialEventDB.common || [];
+        const seasonEvents = specialEventDB[season] || [];
+        const allPossibleEvents = [...commonEvents, ...seasonEvents];
+
+        if (allPossibleEvents.length === 0) return;
+
+        // 2. 전체 목록에서 랜덤으로 하나 선택
+        const event = allPossibleEvents[Math.floor(Math.random() * allPossibleEvents.length)];
 
         const popup = document.getElementById('event-popup');
         if (popup) {
-            document.getElementById('popup-title').innerText = data.title;
-            document.getElementById('popup-desc').innerText = "스페셜 에피소드!";
+            document.getElementById('popup-title').innerText = event.title;
+            document.getElementById('popup-desc').innerText = event.log;
             popup.classList.add('show');
             setTimeout(() => popup.classList.remove('show'), 3000);
         }
 
-        addLog(`<span style="color:#d35400;">[${data.title}]</span> ${data.log}`, false);
-        showBubble('dangbo', data.talk.dangbo, 'high');
-        setTimeout(() => showBubble('chung', data.talk.chung, 'low'), 1500);
+        // 보라색 스타일로 로그 기록 (이벤트 타이틀 포함)
+        addLog(`[${event.title}] ${event.log}`, false, null, 'purple');
 
-        if (data.action) data.action();
+        if (event.talk) {
+            setTimeout(() => {
+                showBubble('dangbo', event.talk.dangbo, 'high');
+                setTimeout(() => showBubble('chung', event.talk.chung, 'low'), 1500);
+            }, 1000);
+        }
+
+        if (event.action) event.action();
     }
 
     function updateDateUI() {
+        // 유람 중이면 배경을 바꾸지 않고 함수를 종료합니다.
+        if (isOnTrip) return; // ★ 유람 중이면 배경 업데이트를 건너뜀 (배경 고정)
+
         const seasonKey = getSeason(gameDate.month);
         const season = seasonInfo[seasonKey];
         const header = document.getElementById('log-header-text');
@@ -387,7 +364,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // 2. 인벤토리 (이모지 적용)
         } else if (currentTab === 'inventory') {
             const rawItems = data.inventory || [];
-            const totalSlots = 12;
+            const totalSlots = 24;
 
             const itemCounts = {};
             rawItems.forEach(id => {
@@ -476,7 +453,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>`;
                 });
             }
-            html += `</div>`;
+            html += `</div>`; // 관계도 카드 목록 닫기
+
+            // ★ 친밀도 조건 없이 버튼 표시 (400 미만이면 클릭 불가)
+            const isDisabled = data.intimacy < 400;
+            const btnOpacity = isDisabled ? "0.5" : "1";
+            const btnCursor = isDisabled ? "not-allowed" : "pointer";
+            const btnText = isDisabled ? `✈️ 유람 보내기 (친밀도 ${data.intimacy}/400)` : `✈️ 유람 보내기 (친밀도 400 소모)`;
+
+            html += `
+                <button class="save-btn" 
+                    style="background:#673AB7; margin-top:10px; opacity:${btnOpacity}; cursor:${btnCursor};" 
+                    onclick="${isDisabled ? "alert('친밀도가 400 이상이어야 유람을 떠날 수 있습니다!')" : "openTripModal()"}"
+                    ${isDisabled ? "" : ""}>
+                    ${btnText}
+                </button>`;
         }
         display.innerHTML = html;
     }
@@ -534,7 +525,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // [로그 함수]
-    function addLog(msg, isSpecial = false, customTime = null) {
+    function addLog(msg, isSpecial = false, customTime = null, type = null) {
         const box = document.getElementById('log-box');
         if (!box) return;
 
@@ -550,15 +541,28 @@ document.addEventListener("DOMContentLoaded", function () {
             d.innerHTML = `<div style="font-weight:bold; font-style:italic; opacity:0.8;">─ ${msg} ─</div>`;
         } else {
             d.className = 'log-entry';
-            if (msg.includes('[Love 이벤트 발동!]')) {
+
+            // 1. 보라색 특수 이벤트 (우선 순위 1번)
+            if (type === 'purple') {
+                d.style.backgroundColor = "#f3e5f5";
+                d.style.borderLeft = "4px solid #9c27b0";
+                d.style.color = "#6a1b9a";
+            }
+            // 2. Love 이벤트 (분홍색)
+            else if (msg.includes('[Love 이벤트 발동!]')) {
                 d.style.backgroundColor = "#fff0f5";
                 d.style.borderLeft = "4px solid #e91e63";
                 d.style.color = "#d81b60";
-            } else if (msg.includes('[대화]')) {
+            }
+            // 3. 일반 대화 (파란색)
+            else if (msg.includes('[대화]')) {
                 d.classList.add('log-social');
-            } else {
+            }
+            // 4. 기타 시스템 로그
+            else {
                 d.classList.add('log-system');
             }
+
             const formattedMsg = msg.replace(/\[(.*?)\]/g, '<span style="font-weight:bold;">[$1]</span>');
             d.innerHTML = `<span class="log-time">${timeStr}</span>${formattedMsg}`;
         }
@@ -568,10 +572,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!customTime) {
             gameLogs.push({
-                msg: msg,
-                isSpecial: isSpecial,
-                time: timeStr
-            });
+                msg,
+                isSpecial,
+                time: timeStr,
+                type: type
+            }); // type도 저장
             if (gameLogs.length > 50) gameLogs.shift();
             localStorage.setItem('hapsa_game_logs', JSON.stringify(gameLogs));
         }
@@ -579,7 +584,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function restoreLogs() {
         gameLogs.forEach(log => {
-            addLog(log.msg, log.isSpecial, log.time);
+            // 네 번째 인자로 저장되어 있던 type(purple 등)을 전달합니다.
+            addLog(log.msg, log.isSpecial, log.time, log.type);
         });
     }
 
@@ -632,6 +638,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function scheduleNextMove(id) {
+        if (isOnTrip) return; // 유람 중이면 다음 움직임이나 대화를 예약하지 않음
         // [안전장치] 대화 락이 30초 이상 걸려있으면 강제 해제
         if (isInteracting && (Date.now() - lastDialogTime > 30000)) {
             console.warn("상호작용 락이 걸려 강제로 해제합니다.");
@@ -667,8 +674,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function triggerInteraction() {
-        if (isInteracting) return;
-        isInteracting = true;
+        if (isInteracting || isOnTrip) return;
+        isInteracting = true; // 대화 시작 시 잠금 설정
 
         const c1 = charData['dangbo'];
         const c2 = charData['chung'];
@@ -768,7 +775,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (char.trait === '능글맞음') baseScore = 1.2;
         else if (char.trait === '질투많음') baseScore = 0.8;
 
-        char.intimacy += Math.round(baseScore);
+        char.intimacy += Math.round(baseScore * 2);
 
         const currentSeason = getSeason(gameDate.month);
         if (currentSeason === 'spring') {
@@ -972,6 +979,114 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    let isOnTrip = false; // 유람 중인지 확인하는 변수
+
+    function openTripModal() {
+        const grid = document.getElementById('trip-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        Object.keys(tripDB).forEach(key => {
+            const place = tripDB[key];
+            // 텍스트(span)를 제거하고 이미지만 출력하도록 수정
+            grid.innerHTML += `
+            <button class="trip-btn" 
+                    style="background-image:url('bg/${place.img}'); 
+                           background-size: cover; 
+                           background-position: center; 
+                           border-radius: 8px; 
+                           border: 2px solid #ddd; 
+                           transition: transform 0.2s;" 
+                    onclick="startTrip('${key}')"
+                    onmouseover="this.style.transform='scale(1.05)'"
+                    onmouseout="this.style.transform='scale(1)'">
+            </button>`;
+        });
+        document.getElementById('trip-modal').classList.add('open');
+    }
+
+    function startTrip(placeKey) {
+        if (isOnTrip) return;
+        const place = tripDB[placeKey];
+
+        // 1. 자원 소모 및 상태 변경
+        charData['dangbo'].intimacy -= 400;
+        charData['chung'].intimacy -= 400;
+        isOnTrip = true;
+        isInteracting = true; // 유람 중 대화/이동 방지
+
+        document.getElementById('trip-modal').classList.remove('open');
+
+        // 2. 캐릭터 숨기기 및 유람지 배경 교체 + 블러 추가
+        document.querySelectorAll('.character-sprite').forEach(el => el.style.display = 'none');
+        const bg = document.getElementById('game-bg'); // 배경 요소 가져오기
+        bg.style.backgroundImage = `url('bg/${place.img}')`;
+        bg.classList.add('trip-blur'); // ★ 블러 효과 켜기
+
+        // 3. 첫날 황금색 로그 출력
+        const tripStartMsg = `[유람] ${place.name}(으)로 유람을 떠납니다. ${place.startLog}`;
+        addLog(tripStartMsg, false);
+
+        setTimeout(() => {
+            const firstLog = document.querySelector('.log-container .log-entry');
+            if (firstLog) firstLog.classList.add('log-special');
+        }, 10);
+
+        // 4. 4일간의 여행 기록 로그 (5초 간격)
+        for (let i = 1; i <= 4; i++) {
+            setTimeout(() => {
+                if (!isOnTrip) return;
+                const randomLog = place.midLogs[Math.floor(Math.random() * place.midLogs.length)];
+                addLog(`[유람] ${randomLog}`);
+            }, i * 5000);
+        }
+
+        // [script.js] startTrip 함수 내부의 5. 복귀 로직 부분 수정
+        setTimeout(() => {
+            isOnTrip = false;
+            isInteracting = false;
+
+            bg.classList.remove('trip-blur');
+
+            document.querySelectorAll('.character-sprite').forEach(el => {
+                el.style.display = 'flex';
+            });
+
+            // ★ 수정된 부분: 지정된 receiver가 있으면 그 사람에게, 없으면 기본적으로 청명에게 지급
+            const receiverId = place.receiver || 'chung';
+            const receiverName = charData[receiverId].name;
+
+            addLog(`[유람 완료] 무사히 돌아왔습니다. ${receiverName}님이 선물 <${itemDB[place.gift].name}>을(를) 챙겼습니다.`, true);
+
+            // 지정된 사람에게 아이템 추가
+            addItem(receiverId, place.gift);
+
+            setTimeout(() => {
+                if (!isInteracting) triggerInteraction();
+            }, 1000);
+
+            scheduleNextMove('dangbo');
+            scheduleNextMove('chung');
+            updateDateUI();
+            renderInfoContent();
+        }, 25000);
+    }
+
+    function closeTripModal() {
+        document.getElementById('trip-modal').classList.remove('open');
+    }
+
+    // 버튼 클릭 시 조건 체크 함수
+    function handleTripButtonClick(isDisabled) {
+        if (isDisabled) {
+            alert('친밀도가 400 이상이어야 유람을 떠날 수 있습니다!');
+        } else {
+            openTripModal();
+        }
+    }
+
+
+
+
     // ================= 8. 관리자/디버그 기능 =================
     function toggleDebugMenu() {
         const modal = document.getElementById('debug-modal');
@@ -1011,6 +1126,26 @@ document.addEventListener("DOMContentLoaded", function () {
         location.reload();
     }
 
+    // [script.js] 친밀도 치트 함수 추가
+    function addDebugIntimacy() {
+        // 당보와 청명 모두에게 400점 추가
+        charData['dangbo'].intimacy += 400;
+        charData['chung'].intimacy += 400;
+
+        // 단계(칭호) 업데이트 확인
+        checkMilestones('dangbo');
+        checkMilestones('chung');
+
+        // 변경사항 저장 및 UI 반영
+        saveCharacterSettings(true);
+        renderInfoContent();
+
+        addLog(`[디버그] 관리자 권한으로 친밀도가 400 증가했습니다.`, true);
+        alert("친밀도가 400 추가되었습니다!");
+    }
+
+
+
     // ================= 9. 실행 및 외부 노출 =================
     loadCharacterSettings();
     renderInfoContent();
@@ -1032,4 +1167,9 @@ document.addEventListener("DOMContentLoaded", function () {
     window.editRelDesc = editRelDesc;
     window.saveRelDesc = saveRelDesc;
     window.selectInventoryItem = selectInventoryItem;
+    window.openTripModal = openTripModal;
+    window.startTrip = startTrip;
+    window.closeTripModal = closeTripModal;
+    window.addDebugIntimacy = addDebugIntimacy;
+    window.handleTripButtonClick = handleTripButtonClick;
 });
