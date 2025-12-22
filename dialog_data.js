@@ -37,7 +37,7 @@ const dialogDB = {
                 },
             {
                 t1: "이 당보가 {호칭} 생각해서 산 소중한 당과입니다. 자, 아~ 하십쇼.",
-                action: () => addItem('chung', 'dang-gwa'),
+                action: () => addItem('chung', 'dang_gwa'),
                 reaction: {
                     "무던함": {
                         t2: "주려면 그냥 줘라. 징그럽게.",
@@ -46,7 +46,7 @@ const dialogDB = {
                     "능글맞음": {
                         t2: "손가락까지 씹어먹어도 되냐?",
                         log: "청명이 입을 크게 벌리며 장난을 칩니다.",
-                        action: () => useItem('chung', 'dang-gwa'),
+                        action: () => useItem('chung', 'dang_gwa'),
                     },
                     "질투많음": {
                         t2: "너 다른 놈한테도 이렇게 먹여주냐?",
@@ -355,10 +355,12 @@ const dialogDB = {
         "무던함": [
             {
                 t1: "야 당보야, 배고프다. 뭐 먹을 거 없냐?",
+                action: () => addItem('chung', 'anterior_sac'),
                 reaction: {
                     "능글맞음": {
-                        t2: "{호칭} 드시라고 만두 사왔죠. 자, 아~ 하십쇼.",
-                        log: "당보가 만두를 하나 집어 입에 넣어줍니다."
+                        t2: "산적이 따로 없수다...",
+                        log: "청명이 당보의 전낭을 쎄볐습니다.",
+                        action: () => useItem('dangbo', 'anterior_sac'),
                     },
                     "무던함": {
                         t2: "부엌에 가보십쇼. 국수라도 삶아 드릴까요?",
@@ -698,12 +700,12 @@ const dialogDB = {
         dangbo: [
             // 1. 그냥 평범한 혼잣말 (기존 방식)
             "{호칭}은 오늘도 기운이 넘치시는군.",
-            "비도 닦기 좋은 날씨다.",
+            "{호칭}께 독먹이기 딱 좋은 날씨네",
 
             // 2. [득템] 자소단을 줍는 혼잣말
             {
-                t: "어라? 누가 이런 귀한 약을 흘리고 갔지?",
-                action: () => addItem('dangbo', 'jasodan')
+                t: "(형님 줄 술을 챙겼다)",
+                action: () => addItem('dangbo', 'dukangju')
             },
 
             // 3. [사용] 술을 마시는 혼잣말 (술이 있어야 발동, 없으면 그냥 말만 함)
@@ -718,11 +720,11 @@ const dialogDB = {
 
             {
                 t: "(당과를 얻어왔다)",
-                action: () => addItem('chung', 'dang-gwa')
+                action: () => addItem('chung', 'dang_gwa')
             },
             {
                 t: "(냠냠)",
-                action: () => useItem('chung', 'dang-gwa')
+                action: () => useItem('chung', 'dang_gwa')
             }
         ]
     }

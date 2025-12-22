@@ -5,20 +5,56 @@ document.addEventListener("DOMContentLoaded", function () {
     // 관계 단계 설정
     const REL_LEVELS = {
         intimacy: [
-            { score: 0, title: "아는사이" },
-            { score: 100, title: "친우" },
-            { score: 300, title: "절친" },
-            { score: 500, title: "금란지교" },
-            { score: 700, title: "지기지우" },
-            { score: 1000, title: "관포지교" }
+            {
+                score: 0,
+                title: "아는사이"
+            },
+            {
+                score: 100,
+                title: "친우"
+            },
+            {
+                score: 300,
+                title: "절친"
+            },
+            {
+                score: 500,
+                title: "금란지교"
+            },
+            {
+                score: 700,
+                title: "지기지우"
+            },
+            {
+                score: 1000,
+                title: "관포지교"
+            }
         ],
         affection: [
-            { score: 0, title: "-" },
-            { score: 10, title: "관심있음" },
-            { score: 50, title: "호감" },
-            { score: 100, title: "썸타는 관계" },
-            { score: 200, title: "연인" },
-            { score: 500, title: "부부" }
+            {
+                score: 0,
+                title: "-"
+            },
+            {
+                score: 10,
+                title: "관심있음"
+            },
+            {
+                score: 50,
+                title: "호감"
+            },
+            {
+                score: 100,
+                title: "썸타는 관계"
+            },
+            {
+                score: 200,
+                title: "연인"
+            },
+            {
+                score: 500,
+                title: "부부"
+            }
         ]
     };
 
@@ -27,42 +63,58 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 계절 정보
     const seasonInfo = {
-        spring: { name: "봄", icon: "🌸", filter: "none" },
-        summer: { name: "여름", icon: "☀️", filter: "saturate(1.2) brightness(1.1)" },
-        autumn: { name: "가을", icon: "🍁", filter: "sepia(0.4) contrast(1.1)" },
-        winter: { name: "겨울", icon: "❄️", filter: "brightness(0.9) hue-rotate(10deg) grayscale(0.3)" }
+        spring: {
+            name: "봄",
+            icon: "🌸",
+            filter: "none"
+        },
+        summer: {
+            name: "여름",
+            icon: "☀️",
+            filter: "saturate(1.2) brightness(1.1)"
+        },
+        autumn: {
+            name: "가을",
+            icon: "🍁",
+            filter: "sepia(0.4) contrast(1.1)"
+        },
+        winter: {
+            name: "겨울",
+            icon: "❄️",
+            filter: "brightness(0.9) hue-rotate(10deg) grayscale(0.3)"
+        }
     };
 
 
-function addItem(name, count) {
-    // 1. 인벤토리에 이미 같은 아이템이 있는지 확인
-    let existingItem = inventory.find(item => item.name === name);
+    // [수정된 아이템 획득 함수]
+    function addItem(charId, itemId, count = 1) {
+        const char = charData[charId];
+        if (!char) return;
 
-    if (existingItem) {
-        // 이미 있는 아이템이라면?
-        if (existingItem.count >= 10) {
-            console.log("더 이상 가질 수 없습니다. (최대 10개)");
-            return; // 꽉 찼으면 함수 종료
+        // 1. 현재 이 아이템을 몇 개 가지고 있는지 셉니다.
+        const currentCount = char.inventory.filter(id => id === itemId).length;
+
+        // 2. 최대 10개까지만 가질 수 있게 제한 (이미 10개면 획득 불가)
+        if (currentCount >= 10) {
+            addLog(`[시스템] ${char.name}님의 가방이 꽉 차서 <${itemDB[itemId].name}>을(를) 더 가질 수 없습니다.`, true);
+            return;
         }
 
-        // 개수 증가
-        existingItem.count += count;
+        // 3. 10개를 넘지 않는 선에서 추가할 수 있는 개수 계산
+        const addableCount = Math.min(count, 10 - currentCount);
 
-        // ★ 핵심: 10개가 넘어가면 10개로 강제 고정
-        if (existingItem.count > 10) {
-            existingItem.count = 10;
+        // 4. 개수만큼 인벤토리 배열에 아이템 ID(문자열)를 밀어 넣음
+        for (let i = 0; i < addableCount; i++) {
+            char.inventory.push(itemId);
         }
-    } else {
-        // 없는 아이템이라면 새로 추가 (단, 처음부터 10개 넘게 들어오면 10개로 제한)
-        inventory.push({
-            name: name,
-            count: Math.min(count, 10) // count와 10 중 작은 값을 선택
-        });
+
+        // 5. 로그 및 저장
+        const itemInfo = itemDB[itemId];
+        //addLog(`[획득] ${char.name}님이 <${itemInfo ? itemInfo.name : itemId}>을(를) ${addableCount}개 얻었습니다.`, true);
+
+        saveCharacterSettings(true);
+        if (currentUserId === charId && currentTab === 'inventory') renderInfoContent();
     }
-
-    updateInventoryUI(); // UI 업데이트
-    saveGame(); // (저장 기능 유지) 데이터 저장
-}
 
     // [아이템 사용 함수]
     function useItem(charId, itemId) {
@@ -72,7 +124,7 @@ function addItem(name, count) {
         if (idx > -1) {
             char.inventory.splice(idx, 1);
             const itemInfo = itemDB[itemId];
-            addLog(`[사용] 🥣 ${char.name}님이 <${itemInfo ? itemInfo.name : itemId}>을(를) 사용했습니다.`, true);
+            //addLog(`[사용]${char.name}님이 <${itemInfo ? itemInfo.name : itemId}>을(를) 사용했습니다.`, true);
 
             saveCharacterSettings(true);
             if (currentUserId === charId && currentTab === 'inventory') renderInfoContent();
@@ -86,26 +138,39 @@ function addItem(name, count) {
         spring: {
             title: "⭐️ 종남파 혼내주기",
             log: "종남의 멍청이들을 혼내주고 전리품을 챙겼습니다!",
-            talk: { dangbo: "형님, 이거 비싼 술 같은데요?", chung: "오냐, 잘 챙겨놔라." },
+            talk: {
+                dangbo: "형님, 이거 비싼 술 같은데요?",
+                chung: "오냐, 잘 챙겨놔라."
+            },
             action: () => addItem('chung', 'dukangju')
         },
         summer: {
             title: "⭐️ 수박 서리",
             log: "너무 더워서 가지고 있던 자소단을 먹...으려다 참았습니다.",
-            talk: { dangbo: "그걸 왜 드십니까? 수박이나 드쇼.", chung: "아까워서 그런다, 아까워서!" },
+            talk: {
+                dangbo: "그걸 왜 드십니까? 수박이나 드쇼.",
+                chung: "아까워서 그런다, 아까워서!"
+            },
             action: () => addItem('dangbo', 'jasodan')
         },
         autumn: {
             title: "⭐️ 술독 도장 깨기",
             log: "가을바람이 좋아 술을 한 잔 걸쳤습니다.",
-            talk: { dangbo: "캬, 역시 두강주가 최고입니다.", chung: "야, 내 것도 남겨놔!" },
+            talk: {
+                dangbo: "캬, 역시 두강주가 최고입니다.",
+                chung: "야, 내 것도 남겨놔!"
+            },
             action: () => useItem('chung', 'dukangju') || useItem('dangbo', 'dukangju')
         },
         winter: {
             title: "⭐️ 설원 비무",
             log: "비무 도중 비도가 손상되었습니다.",
-            talk: { dangbo: "아이고, 내 추혼비가...!", chung: "대장간 가서 고쳐, 임마." },
-            action: () => { /* 아이템 변동 없음 */ }
+            talk: {
+                dangbo: "아이고, 내 추혼비가...!",
+                chung: "대장간 가서 고쳐, 임마."
+            },
+            action: () => {
+                /* 아이템 변동 없음 */ }
         }
     };
 
@@ -123,11 +188,15 @@ function addItem(name, count) {
             maxAffectionLevelIdx: 0,
             relationshipTitle: "아는사이",
             loveTitle: "-",
-            inventory: ["chuhonbi", "dukangju"],
-            relations: [{ target: "청명", desc: "나의 도사형님" }],
+            inventory: ['chuhonbi', 'anterior_sac'],
+            relations: [{
+                target: "청명",
+                desc: "나의 도사형님"
+            }],
             img: "character/당보.gif",
             color: "#4CAF50",
-            x: 30, y: 60
+            x: 30,
+            y: 60
         },
         'chung': {
             name: "청명",
@@ -142,10 +211,14 @@ function addItem(name, count) {
             relationshipTitle: "아는사이",
             loveTitle: "-",
             inventory: ["maehwa_sword", "jasodan"],
-            relations: [{ target: "당보", desc: "귀찮지만 믿음직한 녀석." }],
+            relations: [{
+                target: "당보",
+                desc: "귀찮지만 믿음직한 녀석."
+            }],
             img: "character/청명.gif",
             color: "#F44336",
-            x: 70, y: 60
+            x: 70,
+            y: 60
         }
     };
 
@@ -155,7 +228,10 @@ function addItem(name, count) {
     let isInteracting = false;
     const DAY_IN_MS = 40000;
 
-    let gameDate = JSON.parse(localStorage.getItem('savedGameDate')) || { month: 3, day: 1 };
+    let gameDate = JSON.parse(localStorage.getItem('savedGameDate')) || {
+        month: 3,
+        day: 1
+    };
     let gameLogs = JSON.parse(localStorage.getItem('hapsa_game_logs')) || [];
     let lastTimeCheck = Date.now();
     let lastDialogTime = parseInt(localStorage.getItem('savedLastDialogTime')) || 0;
@@ -246,7 +322,11 @@ function addItem(name, count) {
         currentTab = tabName;
         document.querySelectorAll('.sub-tab-btn').forEach(b => {
             b.classList.remove('active');
-            const tabMap = { 'profile': '프로필', 'inventory': '소지품', 'relation': '관계' };
+            const tabMap = {
+                'profile': '프로필',
+                'inventory': '소지품',
+                'relation': '관계'
+            };
             if (b.innerText === tabMap[tabName]) b.classList.add('active');
         });
         renderInfoContent();
@@ -304,7 +384,7 @@ function addItem(name, count) {
             <button class="save-btn" onclick="saveCharacterSettings()">💾 설정 저장하기</button>
             `;
 
-        // 2. 인벤토리 (이모지 적용)
+            // 2. 인벤토리 (이모지 적용)
         } else if (currentTab === 'inventory') {
             const rawItems = data.inventory || [];
             const totalSlots = 12;
@@ -356,7 +436,7 @@ function addItem(name, count) {
                 ${gridHtml}
             </div>`;
 
-        // 3. 관계 (수정 기능 포함, rel 제거됨)
+            // 3. 관계 (수정 기능 포함, rel 제거됨)
         } else if (currentTab === 'relation') {
             html = `<div style="padding:5px;">`;
             html += `
@@ -427,11 +507,11 @@ function addItem(name, count) {
                     if (parsed[key].inventory) charData[key].inventory = parsed[key].inventory;
                     // 관계 설명 로드 추가
                     if (parsed[key].relations) {
-                         parsed[key].relations.forEach((savedRel, idx) => {
-                             if (charData[key].relations[idx]) {
-                                 charData[key].relations[idx].desc = savedRel.desc;
-                             }
-                         });
+                        parsed[key].relations.forEach((savedRel, idx) => {
+                            if (charData[key].relations[idx]) {
+                                charData[key].relations[idx].desc = savedRel.desc;
+                            }
+                        });
                     }
                 }
             });
@@ -459,7 +539,9 @@ function addItem(name, count) {
         if (!box) return;
 
         const timeStr = customTime || new Date().toLocaleTimeString('ko-KR', {
-            hour: '2-digit', minute: '2-digit', second: '2-digit'
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
         });
 
         const d = document.createElement('div');
@@ -485,7 +567,11 @@ function addItem(name, count) {
         if (box.children.length > 50) box.lastChild.remove();
 
         if (!customTime) {
-            gameLogs.push({ msg: msg, isSpecial: isSpecial, time: timeStr });
+            gameLogs.push({
+                msg: msg,
+                isSpecial: isSpecial,
+                time: timeStr
+            });
             if (gameLogs.length > 50) gameLogs.shift();
             localStorage.setItem('hapsa_game_logs', JSON.stringify(gameLogs));
         }
@@ -548,8 +634,8 @@ function addItem(name, count) {
     function scheduleNextMove(id) {
         // [안전장치] 대화 락이 30초 이상 걸려있으면 강제 해제
         if (isInteracting && (Date.now() - lastDialogTime > 30000)) {
-             console.warn("상호작용 락이 걸려 강제로 해제합니다.");
-             isInteracting = false;
+            console.warn("상호작용 락이 걸려 강제로 해제합니다.");
+            isInteracting = false;
         }
 
         if (isInteracting) return;
@@ -768,7 +854,9 @@ function addItem(name, count) {
         showBubble(id, text);
 
         if (action) {
-            setTimeout(() => { action(); }, 500);
+            setTimeout(() => {
+                action();
+            }, 500);
         }
     }
 
@@ -776,6 +864,7 @@ function addItem(name, count) {
     const themeToggleBtn = document.getElementById('theme-toggle');
     if (themeToggleBtn) {
         const bodyElement = document.body;
+
         function applyTheme(theme) {
             if (theme === 'dark') bodyElement.classList.add('dark-theme');
             else bodyElement.classList.remove('dark-theme');
@@ -909,31 +998,17 @@ function addItem(name, count) {
     }
 
     function resetGameData() {
-        if (!confirm("정말 초기화하시겠습니까?\n모든 데이터가 삭제됩니다.")) return;
-        
-        gameDate = { month: 3, day: 1 };
-        localStorage.setItem('savedGameDate', JSON.stringify(gameDate));
-        
-        gameLogs = [];
-        localStorage.removeItem('hapsa_game_logs');
-        document.getElementById('log-box').innerHTML = '';
+        if (!confirm("정말 초기화하시겠습니까?\n모든 데이터가 삭제되고 새로고침됩니다.")) return;
 
-        for (const key in charData) {
-            const char = charData[key];
-            char.intimacy = 0;
-            char.affection = 0;
-            char.maxIntimacyLevelIdx = 0;
-            char.maxAffectionLevelIdx = 0;
-            char.relationshipTitle = "아는사이";
-            char.loveTitle = "-";
-            char.inventory = []; // 인벤토리 초기화
-        }
-        saveCharacterSettings(true);
-        updateDateUI();
-        if (currentTab === 'relation') renderInfoContent();
-        addLog("[시스템] ⚠️ 모든 데이터가 초기화되었습니다.", true);
-        toggleDebugMenu();
-        alert("초기화 완료!");
+        // 1. 저장된 모든 데이터를 삭제합니다.
+        localStorage.removeItem('savedGameDate');
+        localStorage.removeItem('hapsa_game_logs');
+        localStorage.removeItem('hapsa_char_settings'); // ★ 핵심: 이걸 지워야 저장된 빈 가방이 사라집니다.
+
+        // 2. 페이지를 새로고침합니다.
+        // (새로고침을 해야 작성하신 코드의 초기 설정(전낭 보유)을 다시 읽어옵니다)
+        alert("초기화 완료! 처음부터 다시 시작합니다.");
+        location.reload();
     }
 
     // ================= 9. 실행 및 외부 노출 =================
