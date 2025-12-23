@@ -14,6 +14,9 @@
     <header class="game-header">
         <h1>방치형 시뮬레이터</h1>
         <div style="display:flex; gap:8px;">
+            <button id="bgm-toggle-btn" class="sys-btn" onclick="toggleBgm()">
+                <span id="bgm-icon">🔇</span>
+            </button>
             <button id="debug-btn" onclick="toggleDebugMenu()">⚙️</button>
             <button id="theme-toggle">🌙</button>
         </div>
@@ -92,18 +95,19 @@
             <!--<div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
                 <p style="font-weight:bold; color:#673AB7; margin-bottom:10px;">⚡ 시스템 치트</p>
                 <button onclick="addDebugIntimacy()" style="width:100%; padding:10px; background:#673AB7; color:white; border:none; border-radius:5px; cursor:pointer;">
-                    ➕ 당보 & 청명 친밀도 +400
+                    ➕ 당보 & 청명 친밀도 +200
                 </button>
             </div>-->
 
             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
                 <p style="font-weight:bold; color:#d32f2f; margin-bottom:5px;">⚠️ 데이터 초기화</p>
                 <button onclick="resetGameData()" style="width:100%; padding:10px; background:#d32f2f; color:white; border:none; border-radius:5px; cursor:pointer;">
-                    🔄 모든 데이터 초기화 (새로고침)
+                    🔄 모든 데이터 초기화
                 </button>
             </div>
         </div>
     </div>
+
 
     <script src="dialog_data.js"></script>
     <script src="item_data.js"></script>
@@ -111,6 +115,4 @@
     <script src="trip_data.js"></script>
     <script src="script.js"></script>
 
-</body>
-
-</html>
+</body></html>

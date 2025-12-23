@@ -1141,18 +1141,38 @@ body.dark-theme .log-special {
 
 
 
-/* trip-btn 기본 스타일 */
+/* 유람 버튼 기본 스타일 */
 .trip-btn {
     width: 100%;
     aspect-ratio: 1 / 1;
-    /* 정사각형 유지 */
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    border: 2px solid #ddd;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    
+    /* 부드러운 애니메이션 효과 */
+    transition: transform 0.2s, filter 0.3s;
+    
+    /* 기본 상태 (방문한 곳): 컬러 그대로 표시 */
+    filter: none;
 }
 
+/* 마우스를 올렸을 때 공통 효과: 살짝 커짐 */
 .trip-btn:hover {
-    border-color: #673AB7 !important;
-    /* 마우스 올리면 보라색 테두리 */
+    border-color: #FFC107,
+    transform: scale(1.05);
+    z-index: 1; /* 커졌을 때 다른 요소 위에 보이게 */
+}
+
+/* 방문하지 않은 곳: 회색 처리 및 투명도 */
+.trip-btn.unvisited {
+    filter: grayscale(100%) opacity(0.7);
+}
+
+/* 방문하지 않은 곳에 마우스를 올렸을 때: 컬러 힌트 보여주기 */
+.trip-btn.unvisited:hover {
+    filter: grayscale(0%) opacity(1);
 }
 
 /* 유람 시 배경을 흐리게 만드는 스타일 */
@@ -1179,4 +1199,63 @@ body.dark-theme .log-special {
     background-color: #4e342e !important;
     color: #ffecb3 !important;
     border-left: 4px solid #FFC107 !important;
+}
+
+
+/* 버튼 그룹 컨테이너 (우측 하단 고정) */
+.control-group {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex; /* 가로로 나란히 배치 */
+    gap: 10px;     /* 버튼 사이 간격 */
+    z-index: 9999;
+}
+
+/* 시스템 버튼 공통 스타일 (BGM, 메뉴 버튼 동일 적용) */
+.sys-btn {
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 0, 0, 0.6); /* 반투명 검정 배경 */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px; /* 둥근 사각형 */
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    padding: 0;
+}
+
+.sys-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: translateY(-2px); /* 살짝 떠오르는 효과 */
+}
+
+/* 음악 재생 중일 때 스타일 (보라색 테두리 + 아이콘 흔들림) */
+#bgm-toggle-btn.playing {
+    border-color: #ce93d8; /* 연보라색 테두리 */
+    background: rgba(74, 20, 140, 0.6); /* 보라색 틴트 배경 */
+    box-shadow: 0 0 10px rgba(206, 147, 216, 0.4);
+}
+
+#bgm-toggle-btn.playing span {
+    animation: music-bounce 1s infinite alternate;
+}
+
+/* 아이콘이 둠칫둠칫하는 애니메이션 */
+@keyframes music-bounce {
+    0% { transform: scale(1) rotate(0deg); }
+    100% { transform: scale(1.2) rotate(10deg); }
+}
+
+/* 모바일 화면 위치 조정 */
+@media (max-width: 768px) {
+    .control-group {
+        bottom: 80px; /* 하단 탭바 위에 위치하도록 */
+        right: 15px;
+    }
 }

@@ -187,6 +187,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let isInteracting = false;
     const DAY_IN_MS = 40000;
 
+    // [★수정] 게임 데이터 초기값에 유람 관련 정보 추가
+    let gameData = JSON.parse(localStorage.getItem('hapsa_game_data')) || {
+        visitedTrips: [],
+        tripInfo: null // { placeKey, startTime, endTime, gift } 정보를 담을 공간
+    };
+
     let gameDate = JSON.parse(localStorage.getItem('savedGameDate')) || {
         month: 3,
         day: 1
@@ -229,6 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         localStorage.setItem('savedGameDate', JSON.stringify(gameDate));
         updateDateUI();
+        updateBgmStatus(); // [추가] 날짜가 바뀔 때마다 계절을 체크해서 음악 변경
     }
 
     // [script.js] triggerSpecialEvent 함수 수정
@@ -245,25 +252,51 @@ document.addEventListener("DOMContentLoaded", function () {
         // 2. 전체 목록에서 랜덤으로 하나 선택
         const event = allPossibleEvents[Math.floor(Math.random() * allPossibleEvents.length)];
 
+        // ★ 3. 텍스트 변환 (이미 정의된 processText 함수 활용)
+        // script.js 하단에 정의된 processText 함수를 사용하여 {호칭}을 현재 설정된 호칭으로 바꿉니다.
+        const processedLog = processText(event.log);
+
+        let processedDangboTalk = "";
+        let processedChungTalk = "";
+
+        if (event.talk) {
+            processedDangboTalk = processText(event.talk.dangbo);
+            processedChungTalk = processText(event.talk.chung);
+        }
+
+        // 4. 팝업 표시 (변환된 텍스트 사용)
         const popup = document.getElementById('event-popup');
         if (popup) {
             document.getElementById('popup-title').innerText = event.title;
-            document.getElementById('popup-desc').innerText = event.log;
+            document.getElementById('popup-desc').innerText = processedLog; // ★ 변환된 로그
             popup.classList.add('show');
             setTimeout(() => popup.classList.remove('show'), 3000);
         }
 
-        // 보라색 스타일로 로그 기록 (이벤트 타이틀 포함)
-        addLog(`[${event.title}] ${event.log}`, false, null, 'purple');
+        // 5. 보라색 스타일로 로그 기록 (변환된 로그 사용)
+        addLog(`[${event.title}] ${processedLog}`, false, null, 'purple');
 
+        // 6. 대사 출력 (showBubble 활용 및 변환된 대사 전달)
         if (event.talk) {
             setTimeout(() => {
-                showBubble('dangbo', event.talk.dangbo, 'high');
-                setTimeout(() => showBubble('chung', event.talk.chung, 'low'), 1500);
+                // 당보 대사 출력 (변환된 텍스트)
+                showBubble('dangbo', processedDangboTalk, 'high');
+
+                // 1.5초 뒤 청명 대사 출력 (변환된 텍스트)
+                setTimeout(() => {
+                    showBubble('chung', processedChungTalk, 'low');
+                }, 1500);
             }, 1000);
         }
 
-        if (event.action) event.action();
+        // 7. 액션 실행
+        if (event.action) {
+            event.action();
+        }
+
+        // ★ 8. 중요: 이벤트로 인한 아이템 획득/수치 변화를 즉시 저장 및 화면 갱신
+        saveCharacterSettings(true);
+        renderInfoContent();
     }
 
     function updateDateUI() {
@@ -455,16 +488,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             html += `</div>`; // 관계도 카드 목록 닫기
 
-            // ★ 친밀도 조건 없이 버튼 표시 (400 미만이면 클릭 불가)
-            const isDisabled = data.intimacy < 400;
+            // ★ 친밀도 조건 없이 버튼 표시 (200 미만이면 클릭 불가)
+            const isDisabled = data.intimacy < 200;
             const btnOpacity = isDisabled ? "0.5" : "1";
             const btnCursor = isDisabled ? "not-allowed" : "pointer";
-            const btnText = isDisabled ? `✈️ 유람 보내기 (친밀도 ${data.intimacy}/400)` : `✈️ 유람 보내기 (친밀도 400 소모)`;
+            const btnText = isDisabled ? `✈️ 유람 보내기 (친밀도 ${data.intimacy}/200)` : `✈️ 유람 보내기 (친밀도 200 소모)`;
 
             html += `
                 <button class="save-btn" 
                     style="background:#673AB7; margin-top:10px; opacity:${btnOpacity}; cursor:${btnCursor};" 
-                    onclick="${isDisabled ? "alert('친밀도가 400 이상이어야 유람을 떠날 수 있습니다!')" : "openTripModal()"}"
+                    onclick="${isDisabled ? "alert('친밀도가 200 이상이어야 유람을 떠날 수 있습니다!')" : "openTripModal()"}"
                     ${isDisabled ? "" : ""}>
                     ${btnText}
                 </button>`;
@@ -477,6 +510,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!isSilent) {
             // alert("설정이 저장되었습니다."); // 너무 자주 뜨면 주석 처리
         }
+    }
+
+    // [추가] 게임 데이터(방문 기록 등) 저장 함수
+    function saveGameData() {
+        localStorage.setItem('hapsa_game_data', JSON.stringify(gameData));
     }
 
     function loadCharacterSettings() {
@@ -524,8 +562,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // [로그 함수]
     function addLog(msg, isSpecial = false, customTime = null, type = null) {
+        // 1. 여기서 {호칭} 변환을 수행합니다.
+        const processedMsg = processText(msg);
+
         const box = document.getElementById('log-box');
         if (!box) return;
 
@@ -538,45 +578,51 @@ document.addEventListener("DOMContentLoaded", function () {
         const d = document.createElement('div');
         if (isSpecial) {
             d.className = 'log-entry log-date';
-            d.innerHTML = `<div style="font-weight:bold; font-style:italic; opacity:0.8;">─ ${msg} ─</div>`;
+            // 날짜 구분선에도 변환된 텍스트 적용
+            d.innerHTML = `<div style="font-weight:bold; font-style:italic; opacity:0.8;">─ ${processedMsg} ─</div>`;
         } else {
             d.className = 'log-entry';
 
-            // 1. 보라색 특수 이벤트 (우선 순위 1번)
             if (type === 'purple') {
                 d.style.backgroundColor = "#f3e5f5";
                 d.style.borderLeft = "4px solid #9c27b0";
                 d.style.color = "#6a1b9a";
-            }
-            // 2. Love 이벤트 (분홍색)
-            else if (msg.includes('[Love 이벤트 발동!]')) {
+            } else if (msg.includes('[Love 이벤트 발동!]')) {
                 d.style.backgroundColor = "#fff0f5";
                 d.style.borderLeft = "4px solid #e91e63";
                 d.style.color = "#d81b60";
-            }
-            // 3. 일반 대화 (파란색)
-            else if (msg.includes('[대화]')) {
+            } else if (msg.includes('[대화]')) {
                 d.classList.add('log-social');
-            }
-            // 4. 기타 시스템 로그
-            else {
+            } else {
                 d.classList.add('log-system');
             }
 
-            const formattedMsg = msg.replace(/\[(.*?)\]/g, '<span style="font-weight:bold;">[$1]</span>');
+            // [★ 핵심 수정 부분]
+            // 기존: msg.replace(...) -> 변환 전 원본을 사용하던 문제
+            // 수정: processedMsg.replace(...) -> 변환된 텍스트를 사용하도록 변경!
+            const formattedMsg = processedMsg.replace(/\[(.*?)\]/g, '<span style="font-weight:bold;">[$1]</span>');
+
             d.innerHTML = `<span class="log-time">${timeStr}</span>${formattedMsg}`;
         }
 
+        // 최신 글 추가
         box.prepend(d);
+
+        // 스크롤 강제 고정 (자동 스크롤)
+        requestAnimationFrame(() => {
+            box.scrollTop = 0;
+        });
+
         if (box.children.length > 50) box.lastChild.remove();
 
         if (!customTime) {
+            // 저장할 때는 원본(msg)을 저장해야 나중에 불러올 때 성별이 바뀌어도 대응 가능
             gameLogs.push({
                 msg,
                 isSpecial,
                 time: timeStr,
                 type: type
-            }); // type도 저장
+            });
             if (gameLogs.length > 50) gameLogs.shift();
             localStorage.setItem('hapsa_game_logs', JSON.stringify(gameLogs));
         }
@@ -694,6 +740,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
         moveTo('dangbo', dangboTargetX, meetY, onArrive);
         moveTo('chung', chungTargetX, meetY, onArrive);
+    }
+
+    // 텍스트 내의 {호칭}을 성별에 맞춰 자동으로 바꿔주는 함수
+    function processText(text) {
+        if (!text) return "";
+
+        // 1. 캐릭터들의 성별 확인
+        const dangboGender = charData.dangbo.gender;
+        const chungGender = charData.chung.gender;
+
+        // 2. 호칭 결정 로직 (성별 조합에 따라 변경)
+        let honorific = "형님"; // 기본값 (남-남, 여-남)
+
+        if (dangboGender === '여성' && chungGender === '여성') {
+            honorific = "언니"; // 여-여
+        } else if (dangboGender === '남성' && chungGender === '여성') {
+            honorific = "누님"; // 남-여
+        }
+
+        // 3. 텍스트 내의 {호칭}을 결정된 단어로 모두 치환
+        return text.replace(/{호칭}/g, honorific);
     }
 
     // ================= 6. 대화 및 점수 로직 =================
@@ -985,44 +1052,76 @@ document.addEventListener("DOMContentLoaded", function () {
         const grid = document.getElementById('trip-grid');
         if (!grid) return;
         grid.innerHTML = '';
+
         Object.keys(tripDB).forEach(key => {
             const place = tripDB[key];
-            // 텍스트(span)를 제거하고 이미지만 출력하도록 수정
-            grid.innerHTML += `
-            <button class="trip-btn" 
-                    style="background-image:url('bg/${place.img}'); 
-                           background-size: cover; 
-                           background-position: center; 
-                           border-radius: 8px; 
-                           border: 2px solid #ddd; 
-                           transition: transform 0.2s;" 
-                    onclick="startTrip('${key}')"
-                    onmouseover="this.style.transform='scale(1.05)'"
-                    onmouseout="this.style.transform='scale(1)'">
-            </button>`;
+
+            // 1. 방문 여부 확인
+            const isVisited = gameData.visitedTrips && gameData.visitedTrips.includes(key);
+
+            // 2. 버튼 생성
+            const btn = document.createElement('button');
+
+            // 기본 클래스 추가
+            btn.classList.add('trip-btn');
+
+            // ★ 핵심: 방문하지 않았다면 'unvisited' 클래스 추가 (CSS가 회색 처리함)
+            if (!isVisited) {
+                btn.classList.add('unvisited');
+            }
+
+            // 3. 배경 이미지는 장소마다 다르므로 여기서 설정 (유일한 인라인 스타일)
+            btn.style.backgroundImage = `url('bg/${place.img}')`;
+
+            // 4. 클릭 이벤트 연결
+            btn.onclick = () => startTrip(key);
+
+            grid.appendChild(btn);
         });
+
         document.getElementById('trip-modal').classList.add('open');
     }
 
+    // ================= [유람 시스템 전체 코드] =================
+
+    // 1. 유람 시작 함수
     function startTrip(placeKey) {
         if (isOnTrip) return;
+
         const place = tripDB[placeKey];
 
+        // ★ [설정] 유람 시간 설정 (현재 60초)
+        // 나중에 50000초로 바꾸시려면: const durationSeconds = 50000;
+        const durationSeconds = 40;
+
+        const now = Date.now();
+
         // 1. 자원 소모 및 상태 변경
-        charData['dangbo'].intimacy -= 400;
-        charData['chung'].intimacy -= 400;
+        charData['dangbo'].intimacy -= 200;
+        charData['chung'].intimacy -= 200;
+
+        // 2. 유람 데이터 저장 (새로고침 대비)
+        gameData.tripInfo = {
+            placeKey: placeKey,
+            startTime: now,
+            endTime: now + (durationSeconds * 1000), // 밀리초로 변환
+            gift: place.gift,
+            receiver: place.receiver || 'chung'
+        };
+        saveGameData(); // 저장 함수 호출
+
         isOnTrip = true;
-        isInteracting = true; // 유람 중 대화/이동 방지
+        updateBgmStatus();
+        isInteracting = true;
 
         document.getElementById('trip-modal').classList.remove('open');
-
-        // 2. 캐릭터 숨기기 및 유람지 배경 교체 + 블러 추가
         document.querySelectorAll('.character-sprite').forEach(el => el.style.display = 'none');
-        const bg = document.getElementById('game-bg'); // 배경 요소 가져오기
-        bg.style.backgroundImage = `url('bg/${place.img}')`;
-        bg.classList.add('trip-blur'); // ★ 블러 효과 켜기
 
-        // 3. 첫날 황금색 로그 출력
+        const bg = document.getElementById('game-bg');
+        bg.style.backgroundImage = `url('bg/${place.img}')`;
+        bg.classList.add('trip-blur');
+
+        // 3. 첫 로그 출력
         const tripStartMsg = `[유람] ${place.name}(으)로 유람을 떠납니다. ${place.startLog}`;
         addLog(tripStartMsg, false);
 
@@ -1031,44 +1130,91 @@ document.addEventListener("DOMContentLoaded", function () {
             if (firstLog) firstLog.classList.add('log-special');
         }, 10);
 
-        // 4. 4일간의 여행 기록 로그 (5초 간격)
-        for (let i = 1; i <= 4; i++) {
-            setTimeout(() => {
-                if (!isOnTrip) return;
-                const randomLog = place.midLogs[Math.floor(Math.random() * place.midLogs.length)];
-                addLog(`[유람] ${randomLog}`);
-            }, i * 5000);
+        // 4. 유람 관리 루프 시작
+        checkTripLoop();
+    }
+
+    // 2. 유람 루프 함수 (로그 출력 및 시간 체크)
+    function checkTripLoop() {
+        if (!gameData.tripInfo) return; // 데이터 없으면 중단
+
+        const now = Date.now();
+        const info = gameData.tripInfo;
+
+        // A. 유람 시간이 끝났는지 확인
+        if (now >= info.endTime) {
+            finishTrip();
+            return;
         }
 
-        // [script.js] startTrip 함수 내부의 5. 복귀 로직 부분 수정
+        // B. 아직 유람 중이라면? (새로고침 복구용 안전장치)
+        isOnTrip = true;
+
+        const place = tripDB[info.placeKey];
+        const bg = document.getElementById('game-bg');
+
+        // 배경이나 BGM이 풀려있으면 다시 설정
+        if (!bg.style.backgroundImage.includes(place.img)) {
+            bg.style.backgroundImage = `url('bg/${place.img}')`;
+            bg.classList.add('trip-blur');
+            document.querySelectorAll('.character-sprite').forEach(el => el.style.display = 'none');
+            updateBgmStatus();
+        }
+
+        // C. 랜덤 로그 출력 예약
+        // ★ 3초(3000) ~ 7초(7000) 사이 랜덤 시간
+        const nextLogTime = Math.random() * 4000 + 3000;
+
         setTimeout(() => {
-            isOnTrip = false;
-            isInteracting = false;
+            if (!gameData.tripInfo) return; // 유람 취소/종료 시 중단
 
-            bg.classList.remove('trip-blur');
+            // 로그 출력
+            const randomLog = place.midLogs[Math.floor(Math.random() * place.midLogs.length)];
+            addLog(`[유람] ${randomLog}`);
 
-            document.querySelectorAll('.character-sprite').forEach(el => {
-                el.style.display = 'flex';
-            });
+            // 다음 체크 (재귀 호출)
+            checkTripLoop();
+        }, nextLogTime);
+    }
 
-            // ★ 수정된 부분: 지정된 receiver가 있으면 그 사람에게, 없으면 기본적으로 청명에게 지급
-            const receiverId = place.receiver || 'chung';
-            const receiverName = charData[receiverId].name;
+    // 3. 유람 종료 함수
+    function finishTrip() {
+        if (!gameData.tripInfo) return;
 
-            addLog(`[유람 완료] 무사히 돌아왔습니다. ${receiverName}님이 선물 <${itemDB[place.gift].name}>을(를) 챙겼습니다.`, true);
+        const info = gameData.tripInfo;
 
-            // 지정된 사람에게 아이템 추가
-            addItem(receiverId, place.gift);
+        // 상태 초기화
+        isOnTrip = false;
+        isInteracting = false;
+        gameData.tripInfo = null; // 데이터 삭제
+        saveGameData();
 
-            setTimeout(() => {
-                if (!isInteracting) triggerInteraction();
-            }, 1000);
+        // UI 복구
+        updateBgmStatus();
+        const bg = document.getElementById('game-bg');
+        bg.classList.remove('trip-blur');
+        document.querySelectorAll('.character-sprite').forEach(el => el.style.display = 'flex');
 
-            scheduleNextMove('dangbo');
-            scheduleNextMove('chung');
-            updateDateUI();
-            renderInfoContent();
-        }, 25000);
+        // 방문 기록 저장
+        if (!gameData.visitedTrips.includes(info.placeKey)) {
+            gameData.visitedTrips.push(info.placeKey);
+            saveGameData();
+        }
+
+        // 아이템 지급 로그 및 처리
+        const receiverName = charData[info.receiver].name;
+        addLog(`[유람 완료] 무사히 돌아왔습니다. ${receiverName}님이 선물 <${itemDB[info.gift].name}>을(를) 챙겼습니다.`, true);
+        addItem(info.receiver, info.gift);
+
+        // 후속 처리 (대화 등)
+        setTimeout(() => {
+            if (!isInteracting) triggerInteraction();
+        }, 1000);
+
+        scheduleNextMove('dangbo');
+        scheduleNextMove('chung');
+        updateDateUI();
+        renderInfoContent();
     }
 
     function closeTripModal() {
@@ -1078,7 +1224,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 버튼 클릭 시 조건 체크 함수
     function handleTripButtonClick(isDisabled) {
         if (isDisabled) {
-            alert('친밀도가 400 이상이어야 유람을 떠날 수 있습니다!');
+            alert('친밀도가 200 이상이어야 유람을 떠날 수 있습니다!');
         } else {
             openTripModal();
         }
@@ -1128,9 +1274,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // [script.js] 친밀도 치트 함수 추가
     function addDebugIntimacy() {
-        // 당보와 청명 모두에게 400점 추가
-        charData['dangbo'].intimacy += 400;
-        charData['chung'].intimacy += 400;
+        // 당보와 청명 모두에게 200점 추가
+        charData['dangbo'].intimacy += 200;
+        charData['chung'].intimacy += 200;
 
         // 단계(칭호) 업데이트 확인
         checkMilestones('dangbo');
@@ -1140,10 +1286,86 @@ document.addEventListener("DOMContentLoaded", function () {
         saveCharacterSettings(true);
         renderInfoContent();
 
-        addLog(`[디버그] 관리자 권한으로 친밀도가 400 증가했습니다.`, true);
-        alert("친밀도가 400 추가되었습니다!");
+        addLog(`[디버그] 관리자 권한으로 친밀도가 200 증가했습니다.`, true);
+        alert("친밀도가 200 추가되었습니다!");
     }
 
+
+    // ================= 10. BGM 고급 시스템 (계절 & 유람) =================
+
+    // 1. 음악 파일 설정
+    const bgmFiles = {
+        spring: "bgm/bgm_spring.mp3", // 봄 BGM
+        summer: "bgm/bgm_summer.mp3", // 여름 BGM
+        autumn: "bgm/bgm_autumn.mp3", // 가을 BGM
+        winter: "bgm/bgm_winter.mp3", // 겨울 BGM
+        trip: "bgm/bgm_trip.mp3" // 유람 떠났을 때 BGM
+    };
+
+    let currentBgmKey = null; // 현재 재생 중인 키
+    const bgmAudio = new Audio();
+    bgmAudio.loop = true;
+    bgmAudio.volume = 0.5;
+
+    // 2. 음악 변경 및 재생 함수
+    function playBgm(key) {
+        if (currentBgmKey === key) return; // 이미 같은 곡이면 패스
+
+        const fileName = bgmFiles[key];
+        if (!fileName) return;
+
+        currentBgmKey = key;
+        bgmAudio.src = fileName;
+
+        bgmAudio.play().then(() => {
+            console.log(`[BGM] ${key} 재생 시작: ${fileName}`);
+        }).catch(err => {
+            console.log("브라우저 정책으로 자동 재생 대기 중 (클릭 시 재생)");
+            // 브라우저가 막았을 때, 화면 아무 곳이나 클릭하면 재생 시작
+            document.body.addEventListener('click', () => bgmAudio.play(), {
+                once: true
+            });
+        });
+    }
+
+    // 3. 버튼 UI 연동 및 토글 기능 (요청하신 부분 추가됨)
+    window.toggleBgm = function () {
+        if (bgmAudio.paused) {
+            bgmAudio.play();
+            addLog("[시스템] 🎵 배경음악을 켰습니다.", false);
+        } else {
+            bgmAudio.pause();
+            addLog("[시스템] 🔇 배경음악을 껐습니다.", false);
+        }
+    };
+
+    // [중요] 오디오 상태가 변할 때 버튼 모양(아이콘/애니메이션)도 같이 바꿈
+    bgmAudio.addEventListener('play', () => {
+        const btn = document.getElementById('bgm-toggle-btn');
+        const icon = document.getElementById('bgm-icon');
+        if (btn) btn.classList.add('playing'); // 둥실둥실 애니메이션 시작
+        if (icon) icon.innerText = '🔊';
+    });
+
+    bgmAudio.addEventListener('pause', () => {
+        const btn = document.getElementById('bgm-toggle-btn');
+        const icon = document.getElementById('bgm-icon');
+        if (btn) btn.classList.remove('playing'); // 애니메이션 멈춤
+        if (icon) icon.innerText = '🔇';
+    });
+
+    // 4. 상황에 맞는 음악을 찾아 트는 함수
+    function updateBgmStatus() {
+        if (isOnTrip) {
+            playBgm('trip'); // 유람 중이면 유람 BGM
+        } else {
+            const season = getSeason(gameDate.month);
+            playBgm(season); // 평소엔 계절 BGM
+        }
+    }
+
+    // 5. 게임 시작 시 최초 재생 시도
+    updateBgmStatus();
 
 
     // ================= 9. 실행 및 외부 노출 =================
