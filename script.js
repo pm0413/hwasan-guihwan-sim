@@ -1291,81 +1291,120 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    // ================= 10. BGM 고급 시스템 (계절 & 유람) =================
+    // ================= 10. BGM 시스템 (유튜브 버전) =================
 
-    // 1. 음악 파일 설정
-    const bgmFiles = {
-        spring: "bgm/bgm_spring.mp3", // 봄 BGM
-        summer: "bgm/bgm_summer.mp3", // 여름 BGM
-        autumn: "bgm/bgm_autumn.mp3", // 가을 BGM
-        winter: "bgm/bgm_winter.mp3", // 겨울 BGM
-        trip: "bgm/bgm_trip.mp3" // 유람 떠났을 때 BGM
+    // 1. 유튜브 영상 ID 설정 (mp3 파일 경로 대신 영상 뒤의 v=코드 입력)
+    // 예: https://www.youtube.com/watch?v=dQw4w9WgXcQ 라면 'dQw4w9WgXcQ'
+    const bgmIds = {
+        spring: "vwrjDNeiIQA",   // 봄에 어울리는 유튜브 ID
+        summer: "noazF7LeCTA", // 여름 유튜브 ID
+        autumn: "sxG45y_2_8c", // 가을 유튜브 ID
+        winter: "wepNc69Dos4", // 겨울 유튜브 ID
+        trip: "WcztU41Fo-8"    // 유람 유튜브 ID
     };
 
-    let currentBgmKey = null; // 현재 재생 중인 키
-    const bgmAudio = new Audio();
-    bgmAudio.loop = true;
-    bgmAudio.volume = 0.5;
+    let ytPlayer = null;
+    let currentBgmKey = null;
+    let isBgmEnabled = true; // 기본적으로 켜둠 (사용자 클릭 후 작동)
 
-    // 2. 음악 변경 및 재생 함수
+    // 2. 유튜브 IFrame API 스크립트 로드
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // 3. API 준비되면 플레이어 생성 (이 함수명은 유튜브가 자동으로 찾으므로 바꾸면 안 됨)
+    window.onYouTubeIframeAPIReady = function() {
+        ytPlayer = new YT.Player('youtube-bgm-player', {
+            height: '0',
+            width: '0',
+            playerVars: {
+                'playsinline': 1,
+                'controls': 0, // 컨트롤 바 숨김
+                'loop': 1,     // 반복 재생 설정 (playlist 필요)
+                'disablekb': 1 // 키보드 조작 방지
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    };
+
+    function onPlayerReady(event) {
+        // 플레이어 준비 완료 시 실행
+        ytPlayer.setVolume(30); // 볼륨 0~100 설정
+        updateBgmStatus(); // 준비되면 바로 현재 상황에 맞는 BGM 재생 시도
+    }
+
+    // 영상이 끝나면 다시 처음부터 재생 (무한 루프 구현)
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+            ytPlayer.playVideo(); 
+        }
+    }
+
+    // 4. 음악 변경 및 재생 함수
     function playBgm(key) {
-        if (currentBgmKey === key) return; // 이미 같은 곡이면 패스
-
-        const fileName = bgmFiles[key];
-        if (!fileName) return;
+        // 플레이어가 아직 준비 안 됐거나, 이미 같은 곡이면 패스
+        if (!ytPlayer || !ytPlayer.loadVideoById || currentBgmKey === key) return;
+        
+        const videoId = bgmIds[key];
+        if (!videoId) return;
 
         currentBgmKey = key;
-        bgmAudio.src = fileName;
 
-        bgmAudio.play().then(() => {
-            console.log(`[BGM] ${key} 재생 시작: ${fileName}`);
-        }).catch(err => {
-            console.log("브라우저 정책으로 자동 재생 대기 중 (클릭 시 재생)");
-            // 브라우저가 막았을 때, 화면 아무 곳이나 클릭하면 재생 시작
-            document.body.addEventListener('click', () => bgmAudio.play(), {
-                once: true
-            });
+        // 영상 로드 및 재생
+        // loop를 위해 playlist 파라미터에도 동일 ID를 넣어주는 트릭 사용
+        ytPlayer.loadVideoById({
+            videoId: videoId,
+            startSeconds: 0,
+            suggestedQuality: 'small'
         });
+
+        if (isBgmEnabled) {
+            ytPlayer.playVideo();
+            console.log(`[BGM] 유튜브 재생 시작: ${key}`);
+            
+            // 버튼 UI 업데이트
+            const btn = document.getElementById('bgm-toggle-btn');
+            const icon = document.getElementById('bgm-icon');
+            if (btn) btn.classList.add('playing');
+            if (icon) icon.innerText = '🔊';
+        }
     }
 
-    // 3. 버튼 UI 연동 및 토글 기능 (요청하신 부분 추가됨)
+    // 5. 버튼 토글 기능
     window.toggleBgm = function () {
-        if (bgmAudio.paused) {
-            bgmAudio.play();
+        if (!ytPlayer || !ytPlayer.playVideo) return;
+
+        isBgmEnabled = !isBgmEnabled; // 상태 반전
+
+        const btn = document.getElementById('bgm-toggle-btn');
+        const icon = document.getElementById('bgm-icon');
+
+        if (isBgmEnabled) {
+            ytPlayer.playVideo();
             addLog("[시스템] 🎵 배경음악을 켰습니다.", false);
+            if (btn) btn.classList.add('playing');
+            if (icon) icon.innerText = '🔊';
         } else {
-            bgmAudio.pause();
+            ytPlayer.pauseVideo();
             addLog("[시스템] 🔇 배경음악을 껐습니다.", false);
+            if (btn) btn.classList.remove('playing');
+            if (icon) icon.innerText = '🔇';
         }
     };
 
-    // [중요] 오디오 상태가 변할 때 버튼 모양(아이콘/애니메이션)도 같이 바꿈
-    bgmAudio.addEventListener('play', () => {
-        const btn = document.getElementById('bgm-toggle-btn');
-        const icon = document.getElementById('bgm-icon');
-        if (btn) btn.classList.add('playing'); // 둥실둥실 애니메이션 시작
-        if (icon) icon.innerText = '🔊';
-    });
-
-    bgmAudio.addEventListener('pause', () => {
-        const btn = document.getElementById('bgm-toggle-btn');
-        const icon = document.getElementById('bgm-icon');
-        if (btn) btn.classList.remove('playing'); // 애니메이션 멈춤
-        if (icon) icon.innerText = '🔇';
-    });
-
-    // 4. 상황에 맞는 음악을 찾아 트는 함수
+    // 6. 상황에 맞는 음악 찾기 (기존 로직 유지)
     function updateBgmStatus() {
         if (isOnTrip) {
-            playBgm('trip'); // 유람 중이면 유람 BGM
+            playBgm('trip');
         } else {
             const season = getSeason(gameDate.month);
-            playBgm(season); // 평소엔 계절 BGM
+            playBgm(season);
         }
     }
-
-    // 5. 게임 시작 시 최초 재생 시도
-    updateBgmStatus();
 
 
     // ================= 9. 실행 및 외부 노출 =================
