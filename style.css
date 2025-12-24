@@ -13,7 +13,7 @@
     font-display: swap;
 }
 
-/* 2. 이름과 칭호에 적용할 스타일 클래스 만들기 */
+/* 이름과 칭호에 적용할 스타일 클래스 */
 .char-signature-font {
     font-family: 'MuseumCulturalFoundationClassic', serif;
 }
@@ -30,6 +30,8 @@
     --log-bg: #2c3e50;
     --log-text: #ecf0f1;
     --card-bg: #fafafa;
+    --bubble-bg: #ffffff;
+    --bubble-text: #000000;
 }
 
 body.dark-theme {
@@ -73,6 +75,7 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+/* --- 헤더 --- */
 .game-header {
     display: flex;
     justify-content: space-between;
@@ -100,6 +103,7 @@ body {
     font-family: 'JoseonGulim';
 }
 
+/* --- 메인 레이아웃 --- */
 .main-content {
     flex: 1;
     display: flex;
@@ -308,6 +312,7 @@ body {
     from {
         transform: translateY(0);
     }
+
     to {
         transform: translateY(-6px);
     }
@@ -392,12 +397,6 @@ body {
     color: #689F38;
 }
 
-body.dark-theme .log-entry:has(span:contains("[이벤트]")) {
-    background-color: rgba(139, 195, 74, 0.1) !important;
-    border-left: 4px solid #9CCC65 !important;
-    color: #dcedc8 !important;
-}
-
 .log-time {
     display: block;
     margin-bottom: 5px;
@@ -410,12 +409,17 @@ body.dark-theme .log-entry:has(span:contains("[이벤트]")) {
 }
 
 .log-social {
-    border-left-color: #cccccc;
+    border-left-color: #6dbc33;
     background: rgb(255, 255, 255);
 }
 
 .log-system {
     border-left-color: #9e9e9e;
+}
+
+.log-trip {
+    border-left-color: #FFC107;
+    background: rgb(255, 255, 255);
 }
 
 .log-date {
@@ -425,6 +429,19 @@ body.dark-theme .log-entry:has(span:contains("[이벤트]")) {
     text-align: center;
     padding: 15px 0;
     color: var(--text-secondary);
+}
+
+/* --- 다크 테마 오버라이드 --- */
+body.dark-theme .log-entry:has(span:contains("[이벤트]")) {
+    background-color: rgba(139, 195, 74, 0.1) !important;
+    border-left: 4px solid #9CCC65 !important;
+    color: #dcedc8 !important;
+}
+
+body.dark-theme .log-trip {
+    background: rgba(255, 193, 7, 0.15); /* 어두운 배경에 어울리는 투명한 노란색 */
+    border-left-color: #FFC107;
+    color: #ffecb3; /* 글자색을 약간 밝은 노란색으로 */
 }
 
 body.dark-theme .log-social {
@@ -481,10 +498,12 @@ body.dark-theme .rel-edit-input {
     border-bottom-color: #66bb6a;
 }
 
+/* ================= 반응형 (모바일) ================= */
 @media screen and (max-width: 768px) {
     .game-container {
         flex-direction: column;
     }
+
     .left-panel {
         width: 100%;
         border-right: none;
@@ -493,56 +512,42 @@ body.dark-theme .rel-edit-input {
         height: auto;
         transition: max-height 0.3s ease-out;
     }
+
     .panel-body-wrapper {
         max-height: 0;
         opacity: 0;
         transition: all 0.3s ease-out;
     }
+
     .left-panel.open .panel-body-wrapper {
         max-height: 60vh;
         opacity: 1;
         margin-top: 10px;
     }
+
     #mobile-toggle-btn {
         display: block;
     }
+
     .center-panel {
         width: 100%;
         flex: 1;
         border-right: none;
     }
+
     .right-panel {
         width: 100%;
         height: 250px;
         min-height: 250px;
         border-top: 1px solid var(--border-color);
         background-color: var(--bg-panel);
-        display: flex;
-        flex-direction: column;
     }
-    .log-container {
-        flex: 1;
-        overflow-y: auto;
-        padding: 10px;
-        background-color: var(--bg-body);
-        display: flex;
-        flex-direction: column-reverse;
-    }
+
     .log-entry {
-        padding: 6px 8px;
-        margin-bottom: 5px;
-        border-radius: 4px;
         font-size: 0.8rem;
-        line-height: 1.4;
-        background: var(--bg-panel);
-        border-left: 4px solid #ccc;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s;
-        color: var(--text-primary);
+        /* 모바일에서 폰트 조금 더 크게 */
     }
-    .log-entry:hover {
-        transform: translateX(2px);
-    }
+
     .log-time {
         display: inline-block !important;
         margin-bottom: 0 !important;
@@ -550,30 +555,23 @@ body.dark-theme .rel-edit-input {
         border-bottom: none !important;
         padding-bottom: 0 !important;
     }
+
     .log-social {
-        border-left-color: #2196f3;
-        background: rgba(33, 150, 243, 0.05);
+        border-left-color: #6dbc33;
+        background: rgb(255, 255, 255);
     }
-    .log-system {
-        border-left-color: #9e9e9e;
-    }
-    .log-date {
-        border: none;
-        background: none;
-        box-shadow: none;
-        text-align: center;
-        padding: 15px 0;
-        color: var(--text-secondary);
-    }
+
     body.dark-theme .log-social {
-        background: rgba(33, 150, 243, 0.15);
+        background: rgb(181, 181, 181, 0.15);
     }
-    body.dark-theme .log-entry {
-        box-shadow: none;
-        border-bottom: 1px solid #333;
+
+    .control-group {
+        bottom: 80px;
+        right: 15px;
     }
 }
 
+/* ================= 공통 UI 컴포넌트 ================= */
 .save-btn {
     width: 100%;
     padding: 10px;
@@ -586,6 +584,7 @@ body.dark-theme .rel-edit-input {
     font-size: 1rem;
     cursor: pointer;
 }
+
 .save-btn:hover {
     opacity: 0.9;
 }
@@ -601,6 +600,7 @@ body.dark-theme .rel-edit-input {
     margin-top: 5px;
 }
 
+/* 이벤트 팝업 */
 #event-popup {
     position: fixed;
     top: 50%;
@@ -622,14 +622,17 @@ body.dark-theme .rel-edit-input {
     align-items: center;
     justify-content: center;
 }
+
 #event-popup.show {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
 }
+
 #event-popup h2 {
     margin: 0 0 10px 0;
     font-size: 1.5rem;
 }
+
 #event-popup p {
     margin: 0;
     color: #fff;
@@ -649,6 +652,7 @@ body.dark-theme .log-special {
     border-left: 4px solid #FFC107 !important;
 }
 
+/* 말풍선 */
 .char-bubble {
     position: absolute;
     bottom: 110%;
@@ -674,9 +678,11 @@ body.dark-theme .log-special {
     font-weight: bold;
     opacity: 0;
 }
+
 .char-bubble.show {
     opacity: 1;
 }
+
 .char-bubble::after {
     content: '';
     position: absolute;
@@ -687,9 +693,11 @@ body.dark-theme .log-special {
     border-style: solid;
     border-color: var(--bubble-bg, #ffffff) transparent transparent transparent;
 }
+
 .char-bubble.is-left {
     transform: translateX(-70%);
 }
+
 .char-bubble.is-right {
     transform: translateX(-30%);
 }
@@ -704,10 +712,12 @@ body.dark-theme .log-special {
     font-size: 1.2rem;
     transition: transform 0.2s;
 }
+
 #debug-btn:hover {
     transform: rotate(90deg);
 }
 
+/* 모달 */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -721,9 +731,11 @@ body.dark-theme .log-special {
     align-items: center;
     backdrop-filter: blur(3px);
 }
+
 .modal-overlay.open {
     display: flex;
 }
+
 .modal-content {
     background: var(--bg-panel);
     color: var(--text-primary);
@@ -734,6 +746,7 @@ body.dark-theme .log-special {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     min-width: 300px;
 }
+
 .modal-content button {
     padding: 8px 16px;
     border: none;
@@ -743,10 +756,12 @@ body.dark-theme .log-special {
     font-family: 'JoseonGulim';
     font-size: 1rem;
 }
+
 .modal-content button:hover {
     opacity: 0.9;
 }
 
+/* 아이템 상세 보기 */
 .item-detail-view {
     background: var(--bg-panel);
     border-radius: 16px;
@@ -760,6 +775,7 @@ body.dark-theme .log-special {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.5);
     transition: all 0.3s ease;
 }
+
 .detail-icon {
     font-size: 30px !important;
     padding: 8px;
@@ -771,12 +787,14 @@ body.dark-theme .log-special {
     justify-content: center;
     line-height: 1;
 }
+
 .detail-text {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
+
 .detail-name {
     font-size: 1rem;
     font-weight: 800;
@@ -784,6 +802,7 @@ body.dark-theme .log-special {
     color: var(--text-primary);
     letter-spacing: -0.5px;
 }
+
 .detail-desc {
     font-size: 0.85rem;
     color: var(--text-secondary);
@@ -792,6 +811,7 @@ body.dark-theme .log-special {
     opacity: 0.9;
 }
 
+/* 인벤토리 그리드 */
 .inventory-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -803,6 +823,7 @@ body.dark-theme .log-special {
     background: rgba(0, 0, 0, 0.03);
     border-radius: 12px;
 }
+
 .item-slot {
     aspect-ratio: 1 / 1;
     width: auto !important;
@@ -818,33 +839,40 @@ body.dark-theme .log-special {
     cursor: pointer;
     transition: all 0.2s ease;
 }
+
 .item-slot:hover {
     transform: translateY(-2px);
     border-color: var(--accent-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
 .item-slot.selected {
     border: 2px solid var(--accent-color);
     background-color: rgba(76, 175, 80, 0.05);
 }
+
 .item-slot.empty {
     background-color: transparent;
     border: 1px dashed rgba(0, 0, 0, 0.1);
     box-shadow: none;
     cursor: default;
 }
+
 .item-slot.empty:hover {
     transform: none;
     border-color: rgba(0, 0, 0, 0.1);
 }
+
 .item-slot .item-icon-emoji {
     font-size: 1.5rem;
     line-height: 1;
     filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
 }
+
 .item-slot .item-name {
     display: none;
 }
+
 .item-count {
     position: absolute;
     bottom: -2px;
@@ -859,12 +887,14 @@ body.dark-theme .log-special {
     z-index: 5;
 }
 
+/* 관계도 수정 모드 */
 .rel-view-mode {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 10px;
 }
+
 .rel-desc-text {
     font-size: 0.9rem;
     color: #666;
@@ -872,6 +902,7 @@ body.dark-theme .log-special {
     white-space: pre-wrap;
     flex: 1;
 }
+
 .btn-edit-rel {
     background: none;
     border: none;
@@ -881,15 +912,18 @@ body.dark-theme .log-special {
     font-size: 1.1rem;
     padding: 0;
 }
+
 .rel-card:hover .btn-edit-rel {
     opacity: 1;
 }
+
 .rel-edit-mode {
     display: none;
     flex-direction: column;
     gap: 8px;
     margin-top: 5px;
 }
+
 .rel-edit-input {
     width: 100%;
     border: none;
@@ -904,11 +938,13 @@ body.dark-theme .log-special {
     color: var(--text-primary);
     border-radius: 4px 4px 0 0;
 }
+
 .rel-btn-group {
     display: flex;
     justify-content: flex-end;
     gap: 5px;
 }
+
 .btn-save-rel {
     background: var(--accent-color);
     color: white;
@@ -918,6 +954,7 @@ body.dark-theme .log-special {
     font-size: 0.8rem;
     cursor: pointer;
 }
+
 .btn-cancel-rel {
     background: #999;
     color: white;
@@ -928,6 +965,7 @@ body.dark-theme .log-special {
     cursor: pointer;
 }
 
+/* 유람 & 버튼 스타일 */
 .trip-btn {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -939,22 +977,27 @@ body.dark-theme .log-special {
     transition: transform 0.2s, filter 0.3s;
     filter: none;
 }
+
 .trip-btn:hover {
     border-color: #FFC107;
     transform: scale(1.05);
     z-index: 1;
 }
+
 .trip-btn.unvisited {
     filter: grayscale(100%) opacity(0.7);
 }
+
 .trip-btn.unvisited:hover {
     filter: grayscale(0%) opacity(1);
 }
+
 #game-bg.trip-blur {
     filter: blur(5px) brightness(0.7);
     transition: filter 0.8s ease;
 }
 
+/* 우측 하단 컨트롤 그룹 */
 .control-group {
     position: fixed;
     bottom: 20px;
@@ -963,6 +1006,7 @@ body.dark-theme .log-special {
     gap: 10px;
     z-index: 9999;
 }
+
 .sys-btn {
     width: 45px;
     height: 45px;
@@ -979,36 +1023,33 @@ body.dark-theme .log-special {
     backdrop-filter: blur(4px);
     padding: 0;
 }
+
 .sys-btn:hover {
     background: rgba(0, 0, 0, 0.8);
     transform: translateY(-2px);
 }
+
 #bgm-toggle-btn.playing {
     border-color: #ce93d8;
     background: rgba(74, 20, 140, 0.6);
     box-shadow: 0 0 10px rgba(206, 147, 216, 0.4);
 }
+
 #bgm-toggle-btn.playing span {
     animation: music-bounce 1s infinite alternate;
 }
+
 @keyframes music-bounce {
     0% {
         transform: scale(1) rotate(0deg);
     }
+
     100% {
         transform: scale(1.2) rotate(10deg);
     }
 }
-@media (max-width: 768px) {
-    .control-group {
-        bottom: 80px;
-        right: 15px;
-    }
-}
 
-/* =======================================================
-   [리팩토링] script.js에서 추출한 스타일 (JS HTML 제거용)
-   ======================================================= */
+/* ================= 동적 생성 요소 (JS 연동) ================= */
 
 /* 프로필 헤더 */
 .profile-header-area {
@@ -1017,9 +1058,11 @@ body.dark-theme .log-special {
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border-color);
 }
+
 .char-name-text {
     margin-bottom: 5px;
 }
+
 .char-title-badge {
     padding: 3px 8px;
     border-radius: 10px;
@@ -1032,15 +1075,18 @@ body.dark-theme .log-special {
     gap: 10px;
     width: 100%;
 }
+
 .profile-col {
     flex: 1;
     margin-bottom: 10px;
 }
+
 .color-picker-row {
     display: flex;
     align-items: center;
     gap: 10px;
 }
+
 .color-input {
     width: 50px;
     height: 30px;
@@ -1049,6 +1095,7 @@ body.dark-theme .log-special {
     background: none;
     cursor: pointer;
 }
+
 .color-help-text {
     font-size: 0.8rem;
     color: var(--text-secondary);
@@ -1061,14 +1108,17 @@ body.dark-theme .log-special {
     color: #aaa;
     font-size: 0.85rem;
 }
+
 .inv-wrapper {
     padding: 5px;
 }
+
 .inv-label {
     margin-bottom: 5px;
     font-weight: bold;
     color: var(--text-secondary);
 }
+
 .inv-detail-guide {
     text-align: center;
     width: 100%;
@@ -1080,39 +1130,47 @@ body.dark-theme .log-special {
 .rel-wrapper {
     padding: 5px;
 }
+
 .rel-stat-box {
     margin-bottom: 15px;
-    background: var(--card-bg); /* 다크모드 대응을 위해 변수 사용 권장 */
+    background: var(--card-bg);
     padding: 12px;
     border-radius: 6px;
     border: 1px solid var(--border-color);
 }
+
 .stat-header {
     font-weight: bold;
     margin-bottom: 5px;
     color: var(--text-primary);
 }
+
 .stat-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 5px;
 }
+
 .stat-row.love-row {
     color: #e91e63;
 }
+
 .badge-base {
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.8rem;
 }
+
 .badge-intimacy {
     background: #ddd;
     color: #333;
 }
+
 .badge-affection {
     background: #fce4ec;
     color: #d81b60;
 }
+
 .rel-card-header {
     display: flex;
     justify-content: space-between;
@@ -1121,9 +1179,11 @@ body.dark-theme .log-special {
     border-bottom: 1px dashed var(--border-color);
     padding-bottom: 5px;
 }
+
 .rel-target-name {
     font-size: 1rem;
 }
+
 .trip-action-btn {
     background: #673AB7;
     margin-top: 10px;
@@ -1140,20 +1200,23 @@ body.dark-theme .log-special {
     font-weight: bold;
 }
 
-/* 로그 (Log) 관련 */
+/* 로그 (Log) 하이라이트 */
 .log-date-divider {
     font-weight: bold;
     font-style: italic;
     opacity: 0.8;
 }
+
 .log-highlight-bracket {
     font-weight: bold;
 }
+
 .log-type-purple {
     background-color: #f3e5f5;
     border-left: 4px solid #9c27b0;
     color: #6a1b9a;
 }
+
 .log-type-love {
     background-color: #fff0f5;
     border-left: 4px solid #e91e63;

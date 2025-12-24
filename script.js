@@ -353,7 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // 2. 인벤토리
         } else if (currentTab === 'inventory') {
             const rawItems = data.inventory || [];
-            const totalSlots = 24;
+            const totalSlots = 48;
 
             const itemCounts = {};
             rawItems.forEach(id => {
@@ -537,8 +537,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // [리팩토링] JS에서 style 직접 조작 대신 클래스 추가로 변경
             if (type === 'purple') {
                 d.classList.add('log-type-purple');
-            } else if (msg.includes('[Love 이벤트 발동!]')) {
+            } else if (msg.includes('[호감]')) {
                 d.classList.add('log-type-love');
+            } else if (msg.includes('[유람]')) { // <--- 이 부분을 추가하세요!
+                d.classList.add('log-trip');
             } else if (msg.includes('[대화]')) {
                 d.classList.add('log-social');
             } else {
@@ -759,7 +761,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (scenario.action2) setTimeout(() => scenario.action2(), 500);
 
                 if (isLoveMode) {
-                    addLog(`[Love 이벤트 발동!] 💕 ${fillTitle(scenario.log, title)}`);
+                    addLog(`[호감] 💕 ${fillTitle(scenario.log, title)}`);
                 } else {
                     addLog(`[대화] ${fillTitle(scenario.log, title)}`);
                 }
@@ -1026,24 +1028,64 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('trip-modal').classList.add('open');
     }
 
+    /**
+     * 방문한 지역에서 선물을 결정하는 함수 (중복 방지 및 대체 보상)
+     * @param {string} locationId - tripDB의 키 값
+     * @param {Array} userInventory - 유저의 인벤토리 배열
+     */
+    function getGiftForVisit(locationId, userInventory) {
+        const location = tripDB[locationId];
+        if (!location) return "money_bag"; // 예외 처리
+
+        // location.gifts(배열)이 있으면 사용, 없으면 legacy gift(문자열) 사용
+        const possibleGifts = location.gifts || (location.gift ? [location.gift] : []);
+
+        // 유저가 아직 가지고 있지 않은 선물만 필터링
+        const availableGifts = possibleGifts.filter(gift => !userInventory.includes(gift));
+
+        if (availableGifts.length > 0) {
+            // 안 받은 선물이 있다면 랜덤으로 하나 지급
+            return availableGifts[Math.floor(Math.random() * availableGifts.length)];
+        } else {
+            // 이미 다 받았다면 대체 소모품 지급 (만두, 술, 돈주머니 등)
+            // ※ itemDB에 해당 아이템들이 정의되어 있어야 합니다. 없다면 정의된 것으로 수정하세요.
+            const fallbackRewards = ["dumpling", "alcohol_bottle", "silver_tael"];
+            return fallbackRewards[Math.floor(Math.random() * fallbackRewards.length)];
+        }
+    }
+
     // ================= [유람 시스템 전체 코드] =================
 
     function startTrip(placeKey) {
         if (isOnTrip) return;
 
         const place = tripDB[placeKey];
+        if (!place) return;
+
         const durationSeconds = 40;
         const now = Date.now();
 
         charData['dangbo'].intimacy -= 100;
         charData['chung'].intimacy -= 100;
 
+        // 수취인 결정
+        let receiverId = place.receiver || 'chung';
+        if (Array.isArray(receiverId)) {
+            receiverId = receiverId[Math.floor(Math.random() * receiverId.length)];
+        } else if (receiverId === 'random') {
+            const allChars = Object.keys(charData);
+            receiverId = allChars[Math.floor(Math.random() * allChars.length)];
+        }
+
+        const receiverInventory = charData[receiverId].inventory || [];
+        const selectedGift = getGiftForVisit(placeKey, receiverInventory);
+
         gameData.tripInfo = {
             placeKey: placeKey,
             startTime: now,
             endTime: now + (durationSeconds * 1000),
-            gift: place.gift,
-            receiver: place.receiver || 'chung'
+            gift: selectedGift,
+            receiver: receiverId
         };
         saveGameData();
 
@@ -1058,7 +1100,24 @@ document.addEventListener("DOMContentLoaded", function () {
         bg.style.backgroundImage = `url('bg/${place.img}')`;
         bg.classList.add('trip-blur');
 
-        const tripStartMsg = `[유람] ${place.name}(으)로 유람을 떠납니다. ${place.startLog}`;
+        // [변경] 방문 횟수에 따른 로그 선택 로직 -----------------------
+        let startMsg = "";
+
+        // 1. 현재 방문 횟수 가져오기 (없으면 0)
+        const visitCount = (gameData.tripCounts && gameData.tripCounts[placeKey]) || 0;
+
+        // 2. startLogs가 배열인지 확인
+        if (place.startLogs && Array.isArray(place.startLogs)) {
+            // 방문 횟수를 로그 개수로 나눈 나머지 (0, 1, 2, 0, 1, 2...)
+            const logIndex = visitCount % place.startLogs.length;
+            startMsg = place.startLogs[logIndex];
+        } else {
+            // 배열이 아니면 기존 startLog 사용 (하위 호환)
+            startMsg = place.startLog || "여행을 떠납니다.";
+        }
+        // ----------------------------------------------------------
+
+        const tripStartMsg = `[유람] ${place.name}(으)로 유람을 떠납니다. ${startMsg}`;
         addLog(tripStartMsg, false);
 
         setTimeout(() => {
@@ -1112,6 +1171,15 @@ document.addEventListener("DOMContentLoaded", function () {
         isOnTrip = false;
         isInteracting = false;
         gameData.tripInfo = null;
+
+        // [추가] 방문 횟수 카운팅 로직 -----------------------
+        if (!gameData.tripCounts) {
+            gameData.tripCounts = {};
+        }
+        // 해당 지역 방문 횟수 +1
+        gameData.tripCounts[info.placeKey] = (gameData.tripCounts[info.placeKey] || 0) + 1;
+        // --------------------------------------------------
+
         saveGameData();
 
         updateBgmStatus();
@@ -1121,10 +1189,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!gameData.visitedTrips.includes(info.placeKey)) {
             gameData.visitedTrips.push(info.placeKey);
-            saveGameData();
+            saveGameData(); // visitedTrips 업데이트 저장
         }
 
         const receiverName = charData[info.receiver].name;
+        // 아이템 획득 메시지
         addLog(`[유람 완료] 무사히 돌아왔습니다. ${receiverName}님이 선물 <${itemDB[info.gift].name}>을(를) 챙겼습니다.`, true);
         addItem(info.receiver, info.gift);
 
@@ -1303,6 +1372,24 @@ document.addEventListener("DOMContentLoaded", function () {
             playBgm(season);
         }
     }
+
+    // ================= [추가] 클릭 효과음 시스템 =================
+
+    // 1. 오디오 객체 생성 (미리 로드)
+    const clickSound = new Audio('bgm/click.mp3');
+    clickSound.volume = 0.5; // 볼륨 조절 (0.0 ~ 1.0) - 너무 크면 줄이세요
+
+    // 2. 문서 전체에 클릭 이벤트 감지
+    document.addEventListener('click', function () {
+        // 재생 중이어도 강제로 처음으로 되돌려 연타 가능하게 함
+        clickSound.currentTime = 0;
+
+        // 소리 재생
+        clickSound.play().catch(e => {
+            // 브라우저 정책상 사용자의 첫 상호작용 전에는 재생이 막힐 수 있음 (에러 로그 무시)
+            // console.log("사운드 재생 실패:", e);
+        });
+    });
 
 
     // ================= 9. 실행 및 외부 노출 =================
