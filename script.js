@@ -4,8 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 관계 단계 설정
     const REL_LEVELS = {
-        intimacy: [
-            {
+        intimacy: [{
                 score: 0,
                 title: "아는사이"
             },
@@ -30,8 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 title: "관포지교"
             }
         ],
-        affection: [
-            {
+        affection: [{
                 score: 0,
                 title: "-"
             },
@@ -58,8 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
         ]
     };
 
-    // 성격 목록
-    const personalityList = ["능글맞음", "무던함", "질투많음"];
 
     // 계절 정보
     const seasonInfo = {
@@ -86,37 +82,27 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
 
-    // [수정된 아이템 획득 함수]
     function addItem(charId, itemId, count = 1) {
         const char = charData[charId];
         if (!char) return;
 
-        // 1. 현재 이 아이템을 몇 개 가지고 있는지 셉니다.
         const currentCount = char.inventory.filter(id => id === itemId).length;
 
-        // 2. 최대 10개까지만 가질 수 있게 제한 (이미 10개면 획득 불가)
         if (currentCount >= 10) {
-            addLog(`[시스템] ${char.name}님의 가방이 꽉 차서 <${itemDB[itemId].name}>을(를) 더 가질 수 없습니다.`, true);
             return;
         }
 
-        // 3. 10개를 넘지 않는 선에서 추가할 수 있는 개수 계산
         const addableCount = Math.min(count, 10 - currentCount);
 
-        // 4. 개수만큼 인벤토리 배열에 아이템 ID(문자열)를 밀어 넣음
         for (let i = 0; i < addableCount; i++) {
             char.inventory.push(itemId);
         }
 
-        // 5. 로그 및 저장
         const itemInfo = itemDB[itemId];
-        //addLog(`[획득] ${char.name}님이 <${itemInfo ? itemInfo.name : itemId}>을(를) ${addableCount}개 얻었습니다.`, true);
-
         saveCharacterSettings(true);
         if (currentUserId === charId && currentTab === 'inventory') renderInfoContent();
     }
 
-    // [아이템 사용 함수]
     function useItem(charId, itemId) {
         const char = charData[charId];
         const idx = char.inventory.indexOf(itemId);
@@ -124,8 +110,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (idx > -1) {
             char.inventory.splice(idx, 1);
             const itemInfo = itemDB[itemId];
-            //addLog(`[사용]${char.name}님이 <${itemInfo ? itemInfo.name : itemId}>을(를) 사용했습니다.`, true);
-
             saveCharacterSettings(true);
             if (currentUserId === charId && currentTab === 'inventory') renderInfoContent();
             return true;
@@ -139,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function () {
             name: "당보",
             title: "암존(暗尊)",
             gender: "남성",
-            trait: "능글맞음",
             position: "left",
             intimacy: 0,
             affection: 0,
@@ -161,7 +144,6 @@ document.addEventListener("DOMContentLoaded", function () {
             name: "청명",
             title: "매화검존(梅花劍尊)",
             gender: "남성",
-            trait: "무던함",
             position: "right",
             intimacy: 0,
             affection: 0,
@@ -187,10 +169,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let isInteracting = false;
     const DAY_IN_MS = 40000;
 
-    // [★수정] 게임 데이터 초기값에 유람 관련 정보 추가
     let gameData = JSON.parse(localStorage.getItem('hapsa_game_data')) || {
         visitedTrips: [],
-        tripInfo: null // { placeKey, startTime, endTime, gift } 정보를 담을 공간
+        tripInfo: null
     };
 
     let gameDate = JSON.parse(localStorage.getItem('savedGameDate')) || {
@@ -235,25 +216,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
         localStorage.setItem('savedGameDate', JSON.stringify(gameDate));
         updateDateUI();
-        updateBgmStatus(); // [추가] 날짜가 바뀔 때마다 계절을 체크해서 음악 변경
+        updateBgmStatus();
     }
 
-    // [script.js] triggerSpecialEvent 함수 수정
     function triggerSpecialEvent() {
         const season = getSeason(gameDate.month);
-
-        // 1. 공통 이벤트와 현재 계절 이벤트를 합칩니다.
         const commonEvents = specialEventDB.common || [];
         const seasonEvents = specialEventDB[season] || [];
         const allPossibleEvents = [...commonEvents, ...seasonEvents];
 
         if (allPossibleEvents.length === 0) return;
 
-        // 2. 전체 목록에서 랜덤으로 하나 선택
         const event = allPossibleEvents[Math.floor(Math.random() * allPossibleEvents.length)];
-
-        // ★ 3. 텍스트 변환 (이미 정의된 processText 함수 활용)
-        // script.js 하단에 정의된 processText 함수를 사용하여 {호칭}을 현재 설정된 호칭으로 바꿉니다.
         const processedLog = processText(event.log);
 
         let processedDangboTalk = "";
@@ -264,44 +238,35 @@ document.addEventListener("DOMContentLoaded", function () {
             processedChungTalk = processText(event.talk.chung);
         }
 
-        // 4. 팝업 표시 (변환된 텍스트 사용)
         const popup = document.getElementById('event-popup');
         if (popup) {
             document.getElementById('popup-title').innerText = event.title;
-            document.getElementById('popup-desc').innerText = processedLog; // ★ 변환된 로그
+            document.getElementById('popup-desc').innerText = processedLog;
             popup.classList.add('show');
             setTimeout(() => popup.classList.remove('show'), 3000);
         }
 
-        // 5. 보라색 스타일로 로그 기록 (변환된 로그 사용)
         addLog(`[${event.title}] ${processedLog}`, false, null, 'purple');
 
-        // 6. 대사 출력 (showBubble 활용 및 변환된 대사 전달)
         if (event.talk) {
             setTimeout(() => {
-                // 당보 대사 출력 (변환된 텍스트)
                 showBubble('dangbo', processedDangboTalk, 'high');
-
-                // 1.5초 뒤 청명 대사 출력 (변환된 텍스트)
                 setTimeout(() => {
                     showBubble('chung', processedChungTalk, 'low');
                 }, 1500);
             }, 1000);
         }
 
-        // 7. 액션 실행
         if (event.action) {
             event.action();
         }
 
-        // ★ 8. 중요: 이벤트로 인한 아이템 획득/수치 변화를 즉시 저장 및 화면 갱신
         saveCharacterSettings(true);
         renderInfoContent();
     }
 
     function updateDateUI() {
-        // 유람 중이면 배경을 바꾸지 않고 함수를 종료합니다.
-        if (isOnTrip) return; // ★ 유람 중이면 배경 업데이트를 건너뜀 (배경 고정)
+        if (isOnTrip) return;
 
         const seasonKey = getSeason(gameDate.month);
         const season = seasonInfo[seasonKey];
@@ -352,25 +317,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // 1. 프로필
         if (currentTab === 'profile') {
-            const traitOptions = personalityList.map(p =>
-                `<option value="${p}" ${data.trait === p ? 'selected' : ''}>${p}</option>`
-            ).join('');
             const nameTagColor = getContrastYIQ(data.color);
 
             html = `
-            <div style="text-align:center; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #eee;">
-                <h2 id="char-name-display" class="char-signature-font" style="color:${data.color}; margin-bottom:5px;">${data.name}</h2>
-                <span id="char-title-display" class="char-signature-font" style="background:${data.color}; color:${nameTagColor}; padding:3px 8px; border-radius:10px; font-size:0.8rem;">${data.title}</span>
+            <div class="profile-header-area">
+                <h2 id="char-name-display" class="char-signature-font char-name-text" style="color:${data.color};">${data.name}</h2>
+                <span id="char-title-display" class="char-signature-font char-title-badge" style="background:${data.color}; color:${nameTagColor};">${data.title}</span>
             </div>
-            <div style="display:flex; gap:10px; width:100%;">
-                <div class="info-box" style="flex:1; margin-bottom:10px;">
+            <div class="profile-row">
+                <div class="info-box profile-col">
                     <span class="info-label">📍 위치 (공/수)</span>
                     <select class="custom-select" onchange="updateCharSetting('position', this.value)">
                         <option value="left" ${data.position === 'left' ? 'selected' : ''}>왼쪽 (공)</option>
                         <option value="right" ${data.position === 'right' ? 'selected' : ''}>오른쪽 (수)</option>
                     </select>
                 </div>
-                <div class="info-box" style="flex:1; margin-bottom:10px;">
+                <div class="info-box profile-col">
                     <span class="info-label">⚧ 성별</span>
                     <select class="custom-select" onchange="updateCharSetting('gender', this.value)">
                         <option value="남성" ${data.gender === '남성' ? 'selected' : ''}>남성 ♂️</option>
@@ -379,22 +341,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             </div>
             <div class="info-box">
-                <span class="info-label">🧠 성격 설정</span>
-                <select class="custom-select" onchange="updateCharSetting('trait', this.value)">
-                    ${traitOptions}
-                </select>
-            </div>
-            <div class="info-box">
                 <span class="info-label">🎨 대표 컬러 설정</span>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="color" value="${data.color}" onchange="updateCharSetting('color', this.value)" style="width:50px; height:30px; padding:0; border:none; background:none; cursor:pointer;">
-                    <span style="font-size:0.8rem; color:#666;">클릭하여 변경</span>
+                <div class="color-picker-row">
+                    <input type="color" value="${data.color}" onchange="updateCharSetting('color', this.value)" class="color-input">
+                    <span class="color-help-text">클릭하여 변경</span>
                 </div>
             </div>
             <button class="save-btn" onclick="saveCharacterSettings()">💾 설정 저장하기</button>
             `;
 
-            // 2. 인벤토리 (이모지 적용)
+            // 2. 인벤토리
         } else if (currentTab === 'inventory') {
             const rawItems = data.inventory || [];
             const totalSlots = 24;
@@ -407,7 +363,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let detailHtml = `
                 <div class="item-detail-view" id="inv-detail-view">
-                    <div style="text-align:center; width:100%; color:#aaa; font-size:0.85rem;">
+                    <div class="inv-detail-guide">
                         아이템을 클릭하면<br>여기에 상세 설명이 뜹니다.
                     </div>
                 </div>
@@ -440,26 +396,26 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             gridHtml += '</div>';
 
-            html = `<div style="padding:5px;">
-                <div style="margin-bottom:5px; font-weight:bold; color:#555;">🎒 소지품 (${uniqueItems.length}/${totalSlots})</div>
+            html = `<div class="inv-wrapper">
+                <div class="inv-label">🎒 소지품 (${uniqueItems.length}/${totalSlots})</div>
                 ${detailHtml}
                 ${gridHtml}
             </div>`;
 
-            // 3. 관계 (수정 기능 포함, rel 제거됨)
+            // 3. 관계
         } else if (currentTab === 'relation') {
-            html = `<div style="padding:5px;">`;
+            html = `<div class="rel-wrapper">`;
             html += `
-                <div class="info-box" style="margin-bottom:15px; background:#f9f9f9;">
-                    <div style="font-weight:bold; margin-bottom:5px; color:#333;">📊 현재 관계도</div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <div class="rel-stat-box">
+                    <div class="stat-header">📊 현재 관계도</div>
+                    <div class="stat-row">
                         <span>🤝 친밀도: <b>${data.intimacy}</b></span>
-                        <span class="badge-title" style="background:#ddd; padding:2px 6px; border-radius:4px; font-size:0.8rem;">${data.relationshipTitle}</span>
+                        <span class="badge-title badge-base badge-intimacy">${data.relationshipTitle}</span>
                     </div>
                     ${data.affection > 0 || data.maxAffectionLevelIdx > 0 ? `
-                    <div style="display:flex; justify-content:space-between; color:#e91e63;">
+                    <div class="stat-row love-row">
                         <span>💕 호감도: <b>${data.affection}</b></span>
-                        <span class="badge-love" style="background:#fce4ec; padding:2px 6px; border-radius:4px; font-size:0.8rem;">${data.loveTitle}</span>
+                        <span class="badge-love badge-base badge-affection">${data.loveTitle}</span>
                     </div>` : ''}
                 </div>
             `;
@@ -469,8 +425,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     const displayText = fillTitle(r.desc, data.title);
                     html += `
                     <div class="rel-card">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:5px;">
-                            <strong style="font-size:1rem;">To. ${r.target}</strong>
+                        <div class="rel-card-header">
+                            <strong class="rel-target-name">To. ${r.target}</strong>
                         </div>
                         <div id="rel-view-${idx}" class="rel-view-mode">
                             <div class="rel-desc-text">${displayText}</div>
@@ -488,15 +444,15 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             html += `</div>`; // 관계도 카드 목록 닫기
 
-            // ★ 친밀도 조건 없이 버튼 표시 (200 미만이면 클릭 불가)
             const isDisabled = data.intimacy < 200;
             const btnOpacity = isDisabled ? "0.5" : "1";
             const btnCursor = isDisabled ? "not-allowed" : "pointer";
             const btnText = isDisabled ? `✈️ 유람 보내기 (친밀도 ${data.intimacy}/200)` : `✈️ 유람 보내기 (친밀도 200 소모)`;
 
+            // [리팩토링] trip-action-btn 클래스 추가, 인라인 스타일 일부 유지 (동적 값 때문)
             html += `
-                <button class="save-btn" 
-                    style="background:#673AB7; margin-top:10px; opacity:${btnOpacity}; cursor:${btnCursor};" 
+                <button class="save-btn trip-action-btn" 
+                    style="opacity:${btnOpacity}; cursor:${btnCursor};" 
                     onclick="${isDisabled ? "alert('친밀도가 200 이상이어야 유람을 떠날 수 있습니다!')" : "openTripModal()"}"
                     ${isDisabled ? "" : ""}>
                     ${btnText}
@@ -508,11 +464,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function saveCharacterSettings(isSilent = false) {
         localStorage.setItem('hapsa_char_settings', JSON.stringify(charData));
         if (!isSilent) {
-            // alert("설정이 저장되었습니다."); // 너무 자주 뜨면 주석 처리
+            // alert("설정이 저장되었습니다.");
         }
     }
 
-    // [추가] 게임 데이터(방문 기록 등) 저장 함수
     function saveGameData() {
         localStorage.setItem('hapsa_game_data', JSON.stringify(gameData));
     }
@@ -524,7 +479,6 @@ document.addEventListener("DOMContentLoaded", function () {
             Object.keys(parsed).forEach(key => {
                 if (charData[key]) {
                     charData[key].gender = parsed[key].gender;
-                    charData[key].trait = parsed[key].trait;
                     if (parsed[key].color) charData[key].color = parsed[key].color;
                     if (parsed[key].position) charData[key].position = parsed[key].position;
                     if (parsed[key].intimacy !== undefined) charData[key].intimacy = parsed[key].intimacy;
@@ -534,7 +488,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (parsed[key].relationshipTitle) charData[key].relationshipTitle = parsed[key].relationshipTitle;
                     if (parsed[key].loveTitle) charData[key].loveTitle = parsed[key].loveTitle;
                     if (parsed[key].inventory) charData[key].inventory = parsed[key].inventory;
-                    // 관계 설명 로드 추가
                     if (parsed[key].relations) {
                         parsed[key].relations.forEach((savedRel, idx) => {
                             if (charData[key].relations[idx]) {
@@ -563,9 +516,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function addLog(msg, isSpecial = false, customTime = null, type = null) {
-        // 1. 여기서 {호칭} 변환을 수행합니다.
         const processedMsg = processText(msg);
-
         const box = document.getElementById('log-box');
         if (!box) return;
 
@@ -578,37 +529,29 @@ document.addEventListener("DOMContentLoaded", function () {
         const d = document.createElement('div');
         if (isSpecial) {
             d.className = 'log-entry log-date';
-            // 날짜 구분선에도 변환된 텍스트 적용
-            d.innerHTML = `<div style="font-weight:bold; font-style:italic; opacity:0.8;">─ ${processedMsg} ─</div>`;
+            // [리팩토링] 인라인 스타일 제거 -> 클래스로 변경
+            d.innerHTML = `<div class="log-date-divider">─ ${processedMsg} ─</div>`;
         } else {
             d.className = 'log-entry';
 
+            // [리팩토링] JS에서 style 직접 조작 대신 클래스 추가로 변경
             if (type === 'purple') {
-                d.style.backgroundColor = "#f3e5f5";
-                d.style.borderLeft = "4px solid #9c27b0";
-                d.style.color = "#6a1b9a";
+                d.classList.add('log-type-purple');
             } else if (msg.includes('[Love 이벤트 발동!]')) {
-                d.style.backgroundColor = "#fff0f5";
-                d.style.borderLeft = "4px solid #e91e63";
-                d.style.color = "#d81b60";
+                d.classList.add('log-type-love');
             } else if (msg.includes('[대화]')) {
                 d.classList.add('log-social');
             } else {
                 d.classList.add('log-system');
             }
 
-            // [★ 핵심 수정 부분]
-            // 기존: msg.replace(...) -> 변환 전 원본을 사용하던 문제
-            // 수정: processedMsg.replace(...) -> 변환된 텍스트를 사용하도록 변경!
-            const formattedMsg = processedMsg.replace(/\[(.*?)\]/g, '<span style="font-weight:bold;">[$1]</span>');
+            // [리팩토링] 볼드 처리 인라인 스타일 제거 -> 클래스로 변경
+            const formattedMsg = processedMsg.replace(/\[(.*?)\]/g, '<span class="log-highlight-bracket">[$1]</span>');
 
             d.innerHTML = `<span class="log-time">${timeStr}</span>${formattedMsg}`;
         }
 
-        // 최신 글 추가
         box.prepend(d);
-
-        // 스크롤 강제 고정 (자동 스크롤)
         requestAnimationFrame(() => {
             box.scrollTop = 0;
         });
@@ -616,7 +559,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (box.children.length > 50) box.lastChild.remove();
 
         if (!customTime) {
-            // 저장할 때는 원본(msg)을 저장해야 나중에 불러올 때 성별이 바뀌어도 대응 가능
             gameLogs.push({
                 msg,
                 isSpecial,
@@ -630,7 +572,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function restoreLogs() {
         gameLogs.forEach(log => {
-            // 네 번째 인자로 저장되어 있던 type(purple 등)을 전달합니다.
             addLog(log.msg, log.isSpecial, log.time, log.type);
         });
     }
@@ -646,10 +587,11 @@ document.addEventListener("DOMContentLoaded", function () {
             el.id = `char-${id}`;
             el.style.left = data.x + '%';
             el.style.top = data.y + '%';
+            // [리팩토링] 인라인 스타일 제거 -> 클래스 사용
             el.innerHTML = `
                     <div class="bubble" id="bubble-${id}">...</div>
                     <img src="${data.img}" onerror="this.src='https://via.placeholder.com/100?text=${data.name}'">
-                    <div style="background:rgba(0,0,0,0.6); color:white; font-size:11px; padding:2px 6px; border-radius:10px; margin-top:5px; font-weight:bold;">${data.name}</div>
+                    <div class="char-nametag">${data.name}</div>
                 `;
             el.onclick = () => {
                 selectCharacter(id);
@@ -684,8 +626,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function scheduleNextMove(id) {
-        if (isOnTrip) return; // 유람 중이면 다음 움직임이나 대화를 예약하지 않음
-        // [안전장치] 대화 락이 30초 이상 걸려있으면 강제 해제
+        if (isOnTrip) return;
         if (isInteracting && (Date.now() - lastDialogTime > 30000)) {
             console.warn("상호작용 락이 걸려 강제로 해제합니다.");
             isInteracting = false;
@@ -721,7 +662,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function triggerInteraction() {
         if (isInteracting || isOnTrip) return;
-        isInteracting = true; // 대화 시작 시 잠금 설정
+        isInteracting = true;
 
         const c1 = charData['dangbo'];
         const c2 = charData['chung'];
@@ -742,24 +683,20 @@ document.addEventListener("DOMContentLoaded", function () {
         moveTo('chung', chungTargetX, meetY, onArrive);
     }
 
-    // 텍스트 내의 {호칭}을 성별에 맞춰 자동으로 바꿔주는 함수
     function processText(text) {
         if (!text) return "";
 
-        // 1. 캐릭터들의 성별 확인
         const dangboGender = charData.dangbo.gender;
         const chungGender = charData.chung.gender;
 
-        // 2. 호칭 결정 로직 (성별 조합에 따라 변경)
-        let honorific = "형님"; // 기본값 (남-남, 여-남)
+        let honorific = "형님";
 
         if (dangboGender === '여성' && chungGender === '여성') {
-            honorific = "언니"; // 여-여
+            honorific = "언니";
         } else if (dangboGender === '남성' && chungGender === '여성') {
-            honorific = "누님"; // 남-여
+            honorific = "누님";
         }
 
-        // 3. 텍스트 내의 {호칭}을 결정된 단어로 모두 치환
         return text.replace(/{호칭}/g, honorific);
     }
 
@@ -768,79 +705,85 @@ document.addEventListener("DOMContentLoaded", function () {
         const isDangboStarts = Math.random() < 0.5;
         const starterId = isDangboStarts ? 'dangbo' : 'chung';
         const listenerId = isDangboStarts ? 'chung' : 'dangbo';
-
         const starterData = charData[starterId];
-        const listenerData = charData[listenerId];
 
         let title = "형님";
         if (charData['dangbo'].gender === '여성' && charData['chung'].gender === '여성') title = "언니";
         else if (charData['dangbo'].gender === '남성' && charData['chung'].gender === '여성') title = "누님";
         else if (starterId === 'dangbo') title = "도사 형님";
 
+        const currentSeason = getSeason(gameDate.month);
+
         let isLoveMode = false;
         if (starterData.affection >= 10 && Math.random() < 0.4) {
             isLoveMode = true;
         }
 
-        let dbSection;
-        let starterPers = starterData.trait;
-        let listenerPers = listenerData.trait;
+        let candidateScenarios = [];
 
-        if (isLoveMode && dialogDB.love_interaction && dialogDB.love_interaction[starterId]) {
-            const loveDB = dialogDB.love_interaction[starterId];
-            if (loveDB[starterPers]) {
-                dbSection = loveDB[starterPers];
+        const getScenarios = (db, type) => {
+            if (!db) return [];
+            if (type === 'love') {
+                if (db.love_interaction && db.love_interaction[starterId]) {
+                    return db.love_interaction[starterId];
+                }
             } else {
-                const defaultTrait = (starterId === 'dangbo') ? "능글맞음" : "무던함";
-                dbSection = loveDB[defaultTrait] || loveDB[Object.keys(loveDB)[0]];
+                const groupKey = (starterId === 'dangbo') ? 'dangbo_start' : 'chung_start';
+                if (db[groupKey]) {
+                    return db[groupKey];
+                }
             }
-        } else {
+            return [];
+        };
+
+        const commonList = getScenarios(dialogDB.common, isLoveMode ? 'love' : 'normal');
+        const seasonList = getScenarios(dialogDB[currentSeason], isLoveMode ? 'love' : 'normal');
+
+        candidateScenarios = [...commonList, ...seasonList];
+
+        if (candidateScenarios.length === 0) {
             isLoveMode = false;
-            if (starterId === 'dangbo') {
-                dbSection = dialogDB.dangbo_start[starterPers] || dialogDB.dangbo_start["능글맞음"];
-            } else {
-                dbSection = dialogDB.chung_start[starterPers] || dialogDB.chung_start["무던함"];
-            }
+            candidateScenarios = getScenarios(dialogDB.common, 'normal');
         }
 
-        const scenario = dbSection[Math.floor(Math.random() * dbSection.length)];
-        const response = scenario.reaction[listenerPers] || scenario.reaction["무던함"];
+        if (candidateScenarios.length > 0) {
+            const scenario = candidateScenarios[Math.floor(Math.random() * candidateScenarios.length)];
 
-        showBubble(starterId, fillTitle(scenario.t1, title), starterId === 'dangbo' ? 'high' : 'low');
-        if (scenario.action) {
-            setTimeout(() => scenario.action(), 500);
-        }
+            showBubble(starterId, fillTitle(scenario.t1, title), starterId === 'dangbo' ? 'high' : 'low');
 
-        setTimeout(() => {
-            showBubble(listenerId, fillTitle(response.t2, title), listenerId === 'dangbo' ? 'high' : 'low');
-            if (response.action) {
-                setTimeout(() => response.action(), 500);
-            }
-
-            if (isLoveMode) {
-                addLog(`[Love 이벤트 발동!] 💕 ${fillTitle(response.log, title)}`);
-            } else {
-                addLog(`[대화] ${fillTitle(response.log, title)}`);
-            }
-
-            calculateInteractionScore('dangbo', isLoveMode);
-            calculateInteractionScore('chung', isLoveMode);
+            if (scenario.action1) setTimeout(() => scenario.action1(), 500);
 
             setTimeout(() => {
-                isInteracting = false;
-                lastDialogTime = Date.now();
-                localStorage.setItem('savedLastDialogTime', lastDialogTime);
-                scheduleNextMove('dangbo');
-                scheduleNextMove('chung');
-            }, 2500);
-        }, 2000);
+                showBubble(listenerId, fillTitle(scenario.t2, title), listenerId === 'dangbo' ? 'high' : 'low');
+
+                if (scenario.action2) setTimeout(() => scenario.action2(), 500);
+
+                if (isLoveMode) {
+                    addLog(`[Love 이벤트 발동!] 💕 ${fillTitle(scenario.log, title)}`);
+                } else {
+                    addLog(`[대화] ${fillTitle(scenario.log, title)}`);
+                }
+
+                calculateInteractionScore('dangbo', isLoveMode);
+                calculateInteractionScore('chung', isLoveMode);
+
+                setTimeout(() => {
+                    isInteracting = false;
+                    lastDialogTime = Date.now();
+                    localStorage.setItem('savedLastDialogTime', lastDialogTime);
+                    scheduleNextMove('dangbo');
+                    scheduleNextMove('chung');
+                }, 2500);
+            }, 2000);
+
+        } else {
+            isInteracting = false;
+        }
     }
 
     function calculateInteractionScore(charId, isLoveInteraction = false) {
         const char = charData[charId];
         let baseScore = 1;
-        if (char.trait === '능글맞음') baseScore = 1.2;
-        else if (char.trait === '질투많음') baseScore = 0.8;
 
         char.intimacy += Math.round(baseScore * 2);
 
@@ -901,9 +844,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function triggerMonologue(id) {
-        if (!dialogDB.solo || !dialogDB.solo[id]) return;
+        const currentSeason = getSeason(gameDate.month);
+        let lines = [];
 
-        const lines = dialogDB.solo[id];
+        if (dialogDB[currentSeason] && dialogDB[currentSeason].solo && dialogDB[currentSeason].solo[id]) {
+            lines = dialogDB[currentSeason].solo[id];
+        }
+
+        if ((!lines || lines.length === 0) && dialogDB.common && dialogDB.common.solo && dialogDB.common.solo[id]) {
+            lines = dialogDB.common.solo[id];
+        }
+
+        if (!lines || lines.length === 0) return;
+
         const picked = lines[Math.floor(Math.random() * lines.length)];
 
         let text = "";
@@ -925,6 +878,7 @@ document.addEventListener("DOMContentLoaded", function () {
         else if (id === 'dangbo') title = "도사 형님";
 
         text = fillTitle(text, title);
+
         showBubble(id, text);
 
         if (action) {
@@ -1028,7 +982,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (element) element.classList.add('selected');
     }
 
-    // [관계도 수정 기능]
     function editRelDesc(idx) {
         document.getElementById(`rel-view-${idx}`).style.display = 'none';
         document.getElementById(`rel-edit-${idx}`).style.display = 'flex';
@@ -1046,7 +999,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    let isOnTrip = false; // 유람 중인지 확인하는 변수
+    let isOnTrip = false;
 
     function openTripModal() {
         const grid = document.getElementById('trip-grid');
@@ -1055,25 +1008,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         Object.keys(tripDB).forEach(key => {
             const place = tripDB[key];
-
-            // 1. 방문 여부 확인
             const isVisited = gameData.visitedTrips && gameData.visitedTrips.includes(key);
 
-            // 2. 버튼 생성
             const btn = document.createElement('button');
-
-            // 기본 클래스 추가
             btn.classList.add('trip-btn');
-
-            // ★ 핵심: 방문하지 않았다면 'unvisited' 클래스 추가 (CSS가 회색 처리함)
             if (!isVisited) {
                 btn.classList.add('unvisited');
             }
-
-            // 3. 배경 이미지는 장소마다 다르므로 여기서 설정 (유일한 인라인 스타일)
+            // [예외] 배경 이미지는 데이터에 따라 다르므로 JS에서 유지
             btn.style.backgroundImage = `url('bg/${place.img}')`;
 
-            // 4. 클릭 이벤트 연결
             btn.onclick = () => startTrip(key);
 
             grid.appendChild(btn);
@@ -1084,31 +1028,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ================= [유람 시스템 전체 코드] =================
 
-    // 1. 유람 시작 함수
     function startTrip(placeKey) {
         if (isOnTrip) return;
 
         const place = tripDB[placeKey];
-
-        // ★ [설정] 유람 시간 설정 (현재 60초)
-        // 나중에 50000초로 바꾸시려면: const durationSeconds = 50000;
         const durationSeconds = 40;
-
         const now = Date.now();
 
-        // 1. 자원 소모 및 상태 변경
-        charData['dangbo'].intimacy -= 200;
-        charData['chung'].intimacy -= 200;
+        charData['dangbo'].intimacy -= 100;
+        charData['chung'].intimacy -= 100;
 
-        // 2. 유람 데이터 저장 (새로고침 대비)
         gameData.tripInfo = {
             placeKey: placeKey,
             startTime: now,
-            endTime: now + (durationSeconds * 1000), // 밀리초로 변환
+            endTime: now + (durationSeconds * 1000),
             gift: place.gift,
             receiver: place.receiver || 'chung'
         };
-        saveGameData(); // 저장 함수 호출
+        saveGameData();
 
         isOnTrip = true;
         updateBgmStatus();
@@ -1121,7 +1058,6 @@ document.addEventListener("DOMContentLoaded", function () {
         bg.style.backgroundImage = `url('bg/${place.img}')`;
         bg.classList.add('trip-blur');
 
-        // 3. 첫 로그 출력
         const tripStartMsg = `[유람] ${place.name}(으)로 유람을 떠납니다. ${place.startLog}`;
         addLog(tripStartMsg, false);
 
@@ -1130,30 +1066,25 @@ document.addEventListener("DOMContentLoaded", function () {
             if (firstLog) firstLog.classList.add('log-special');
         }, 10);
 
-        // 4. 유람 관리 루프 시작
         checkTripLoop();
     }
 
-    // 2. 유람 루프 함수 (로그 출력 및 시간 체크)
     function checkTripLoop() {
-        if (!gameData.tripInfo) return; // 데이터 없으면 중단
+        if (!gameData.tripInfo) return;
 
         const now = Date.now();
         const info = gameData.tripInfo;
 
-        // A. 유람 시간이 끝났는지 확인
         if (now >= info.endTime) {
             finishTrip();
             return;
         }
 
-        // B. 아직 유람 중이라면? (새로고침 복구용 안전장치)
         isOnTrip = true;
 
         const place = tripDB[info.placeKey];
         const bg = document.getElementById('game-bg');
 
-        // 배경이나 BGM이 풀려있으면 다시 설정
         if (!bg.style.backgroundImage.includes(place.img)) {
             bg.style.backgroundImage = `url('bg/${place.img}')`;
             bg.classList.add('trip-blur');
@@ -1161,52 +1092,42 @@ document.addEventListener("DOMContentLoaded", function () {
             updateBgmStatus();
         }
 
-        // C. 랜덤 로그 출력 예약
-        // ★ 3초(3000) ~ 7초(7000) 사이 랜덤 시간
         const nextLogTime = Math.random() * 4000 + 3000;
 
         setTimeout(() => {
-            if (!gameData.tripInfo) return; // 유람 취소/종료 시 중단
+            if (!gameData.tripInfo) return;
 
-            // 로그 출력
             const randomLog = place.midLogs[Math.floor(Math.random() * place.midLogs.length)];
             addLog(`[유람] ${randomLog}`);
 
-            // 다음 체크 (재귀 호출)
             checkTripLoop();
         }, nextLogTime);
     }
 
-    // 3. 유람 종료 함수
     function finishTrip() {
         if (!gameData.tripInfo) return;
 
         const info = gameData.tripInfo;
 
-        // 상태 초기화
         isOnTrip = false;
         isInteracting = false;
-        gameData.tripInfo = null; // 데이터 삭제
+        gameData.tripInfo = null;
         saveGameData();
 
-        // UI 복구
         updateBgmStatus();
         const bg = document.getElementById('game-bg');
         bg.classList.remove('trip-blur');
         document.querySelectorAll('.character-sprite').forEach(el => el.style.display = 'flex');
 
-        // 방문 기록 저장
         if (!gameData.visitedTrips.includes(info.placeKey)) {
             gameData.visitedTrips.push(info.placeKey);
             saveGameData();
         }
 
-        // 아이템 지급 로그 및 처리
         const receiverName = charData[info.receiver].name;
         addLog(`[유람 완료] 무사히 돌아왔습니다. ${receiverName}님이 선물 <${itemDB[info.gift].name}>을(를) 챙겼습니다.`, true);
         addItem(info.receiver, info.gift);
 
-        // 후속 처리 (대화 등)
         setTimeout(() => {
             if (!isInteracting) triggerInteraction();
         }, 1000);
@@ -1221,7 +1142,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('trip-modal').classList.remove('open');
     }
 
-    // 버튼 클릭 시 조건 체크 함수
     function handleTripButtonClick(isDisabled) {
         if (isDisabled) {
             alert('친밀도가 200 이상이어야 유람을 떠날 수 있습니다!');
@@ -1229,8 +1149,6 @@ document.addEventListener("DOMContentLoaded", function () {
             openTripModal();
         }
     }
-
-
 
 
     // ================= 8. 관리자/디버그 기능 =================
@@ -1261,28 +1179,21 @@ document.addEventListener("DOMContentLoaded", function () {
     function resetGameData() {
         if (!confirm("정말 초기화하시겠습니까?\n모든 데이터가 삭제되고 새로고침됩니다.")) return;
 
-        // 1. 저장된 모든 데이터를 삭제합니다.
         localStorage.removeItem('savedGameDate');
         localStorage.removeItem('hapsa_game_logs');
-        localStorage.removeItem('hapsa_char_settings'); // ★ 핵심: 이걸 지워야 저장된 빈 가방이 사라집니다.
+        localStorage.removeItem('hapsa_char_settings');
 
-        // 2. 페이지를 새로고침합니다.
-        // (새로고침을 해야 작성하신 코드의 초기 설정(전낭 보유)을 다시 읽어옵니다)
         alert("초기화 완료! 처음부터 다시 시작합니다.");
         location.reload();
     }
 
-    // [script.js] 친밀도 치트 함수 추가
     function addDebugIntimacy() {
-        // 당보와 청명 모두에게 200점 추가
         charData['dangbo'].intimacy += 200;
         charData['chung'].intimacy += 200;
 
-        // 단계(칭호) 업데이트 확인
         checkMilestones('dangbo');
         checkMilestones('chung');
 
-        // 변경사항 저장 및 UI 반영
         saveCharacterSettings(true);
         renderInfoContent();
 
@@ -1293,36 +1204,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ================= 10. BGM 시스템 (유튜브 버전) =================
 
-    // 1. 유튜브 영상 ID 설정 (mp3 파일 경로 대신 영상 뒤의 v=코드 입력)
-    // 예: https://www.youtube.com/watch?v=dQw4w9WgXcQ 라면 'dQw4w9WgXcQ'
     const bgmIds = {
-        spring: "vwrjDNeiIQA",   // 봄에 어울리는 유튜브 ID
-        summer: "noazF7LeCTA", // 여름 유튜브 ID
-        autumn: "sxG45y_2_8c", // 가을 유튜브 ID
-        winter: "wepNc69Dos4", // 겨울 유튜브 ID
-        trip: "WcztU41Fo-8"    // 유람 유튜브 ID
+        spring: "vwrjDNeiIQA",
+        summer: "noazF7LeCTA",
+        autumn: "sxG45y_2_8c",
+        winter: "wepNc69Dos4",
+        trip: "WcztU41Fo-8"
     };
 
     let ytPlayer = null;
     let currentBgmKey = null;
-    let isBgmEnabled = true; // 기본적으로 켜둠 (사용자 클릭 후 작동)
+    let isBgmEnabled = true;
 
-    // 2. 유튜브 IFrame API 스크립트 로드
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-    // 3. API 준비되면 플레이어 생성 (이 함수명은 유튜브가 자동으로 찾으므로 바꾸면 안 됨)
-    window.onYouTubeIframeAPIReady = function() {
+    window.onYouTubeIframeAPIReady = function () {
         ytPlayer = new YT.Player('youtube-bgm-player', {
             height: '0',
             width: '0',
             playerVars: {
                 'playsinline': 1,
-                'controls': 0, // 컨트롤 바 숨김
-                'loop': 1,     // 반복 재생 설정 (playlist 필요)
-                'disablekb': 1 // 키보드 조작 방지
+                'controls': 0,
+                'loop': 1,
+                'disablekb': 1
             },
             events: {
                 'onReady': onPlayerReady,
@@ -1332,30 +1239,24 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     function onPlayerReady(event) {
-        // 플레이어 준비 완료 시 실행
-        ytPlayer.setVolume(30); // 볼륨 0~100 설정
-        updateBgmStatus(); // 준비되면 바로 현재 상황에 맞는 BGM 재생 시도
+        ytPlayer.setVolume(30);
+        updateBgmStatus();
     }
 
-    // 영상이 끝나면 다시 처음부터 재생 (무한 루프 구현)
     function onPlayerStateChange(event) {
         if (event.data === YT.PlayerState.ENDED) {
-            ytPlayer.playVideo(); 
+            ytPlayer.playVideo();
         }
     }
 
-    // 4. 음악 변경 및 재생 함수
     function playBgm(key) {
-        // 플레이어가 아직 준비 안 됐거나, 이미 같은 곡이면 패스
         if (!ytPlayer || !ytPlayer.loadVideoById || currentBgmKey === key) return;
-        
+
         const videoId = bgmIds[key];
         if (!videoId) return;
 
         currentBgmKey = key;
 
-        // 영상 로드 및 재생
-        // loop를 위해 playlist 파라미터에도 동일 ID를 넣어주는 트릭 사용
         ytPlayer.loadVideoById({
             videoId: videoId,
             startSeconds: 0,
@@ -1365,8 +1266,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (isBgmEnabled) {
             ytPlayer.playVideo();
             console.log(`[BGM] 유튜브 재생 시작: ${key}`);
-            
-            // 버튼 UI 업데이트
+
             const btn = document.getElementById('bgm-toggle-btn');
             const icon = document.getElementById('bgm-icon');
             if (btn) btn.classList.add('playing');
@@ -1374,11 +1274,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 5. 버튼 토글 기능
     window.toggleBgm = function () {
         if (!ytPlayer || !ytPlayer.playVideo) return;
 
-        isBgmEnabled = !isBgmEnabled; // 상태 반전
+        isBgmEnabled = !isBgmEnabled;
 
         const btn = document.getElementById('bgm-toggle-btn');
         const icon = document.getElementById('bgm-icon');
@@ -1396,7 +1295,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // 6. 상황에 맞는 음악 찾기 (기존 로직 유지)
     function updateBgmStatus() {
         if (isOnTrip) {
             playBgm('trip');

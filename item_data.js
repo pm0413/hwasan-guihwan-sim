@@ -26,6 +26,12 @@ const itemDB = {
         icon: "🥮",
         type: "consumable"
     },
+    "raspberry": {
+        name: "산딸기",
+        desc: "새콤달콤한 산딸기",
+        icon: "🍓",
+        type: "consumable"
+    },
     "anterior_sac": {
         name: "전낭",
         desc: "돈주머니.",
@@ -46,7 +52,7 @@ const itemDB = {
     },
     "honey": {
         name: "유채꿀",
-        desc: "멜이라는 이름의 양민이 추천한 만두집의 만두.",
+        desc: "운남의 유채꽃밭에서 난 꿀. 엄청 달다!!",
         icon: "🍯",
         type: "consumable"
     },

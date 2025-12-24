@@ -64,7 +64,6 @@ body.dark-theme {
 
 body {
     font-family: 'JoseonGulim', sans-serif;
-    /* 폰트 적용 */
     height: 100svh;
     overflow: hidden;
     background-color: var(--bg-body);
@@ -248,6 +247,8 @@ body {
     border-radius: 6px;
     margin-bottom: 8px;
     border: 1px solid var(--border-color);
+    position: relative;
+    transition: all 0.3s;
 }
 
 #mobile-toggle-btn {
@@ -268,7 +269,6 @@ body {
     background-color: #000;
 }
 
-/* 기본 배경을 봄 이미지로 설정 */
 #game-bg {
     width: 100%;
     height: 100%;
@@ -280,7 +280,6 @@ body {
     left: 0;
     z-index: 1;
     transition: filter 2s ease;
-    /* 계절 변경 시 부드럽게 색감 전환 */
 }
 
 .character-sprite {
@@ -309,7 +308,6 @@ body {
     from {
         transform: translateY(0);
     }
-
     to {
         transform: translateY(-6px);
     }
@@ -338,19 +336,17 @@ body {
     opacity: 1;
 }
 
-/* --- [오른쪽] 로그창 (카드 스타일 - PC 적용) --- */
+/* --- [오른쪽] 로그창 --- */
 .right-panel {
     width: 300px;
     flex-shrink: 0;
     border-right: none;
-    /* 배경색을 패널색(밝은색/다크모드)으로 통일 */
     background-color: var(--bg-panel);
     border-left: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
 }
 
-/* 시간/계절 표시 헤더 */
 #season-header {
     padding: 10px;
     text-align: center;
@@ -359,28 +355,22 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* 로그 컨테이너 */
 .log-container {
     flex: 1;
     overflow-y: auto;
     padding: 10px;
-    /* PC에서도 카드 배경과 구분되도록 바디 배경색 사용 */
     background-color: var(--bg-body);
     display: flex;
     flex-direction: column-reverse;
-    /* 최신 로그가 위로 */
     font-family: 'JoseonGulim', monospace;
 }
 
-/* 개별 로그 카드 (공통 디자인) */
 .log-entry {
     padding: 6px 8px;
     margin-bottom: 5px;
     border-radius: 4px;
     font-size: 0.72rem;
     line-height: 1.4;
-
-    /* 카드 스타일 핵심 */
     background: var(--bg-panel);
     border-left: 4px solid #ccc;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -392,61 +382,42 @@ body {
     transform: translateX(2px);
 }
 
-/* [이벤트] 로그 전용 연두색 스타일 */
-.log-entry.log-system span[style*="font-weight:bold;"] {
-    /* [이벤트] 글자색 변경 */
-}
-
-/* [이벤트] 문구가 포함된 로그 전체 배경 및 테두리 */
 .log-entry:has(span:contains("[이벤트]")) {
     background-color: rgba(139, 195, 74, 0.05) !important;
     border-left: 4px solid #8BC34A !important;
-    /* 연두색 포인트 */
 }
 
-/* 텍스트 내 [이벤트] 강조색 */
 .log-entry span b,
 .log-entry span strong {
     color: #689F38;
-    /* 진한 연두색 */
 }
 
-/* 다크모드 대응 */
 body.dark-theme .log-entry:has(span:contains("[이벤트]")) {
     background-color: rgba(139, 195, 74, 0.1) !important;
     border-left: 4px solid #9CCC65 !important;
     color: #dcedc8 !important;
 }
 
-/* 시간 표시 스타일 */
 .log-time {
     display: block;
-    /* [핵심] 시간을 블록 요소로 만들어 줄바꿈 처리 */
     margin-bottom: 5px;
-    /* 내용과 시간 사이의 간격 추가 */
     color: #aaa;
-    /* 색상을 조금 더 연하게 */
     font-size: 0.7rem;
     font-weight: normal;
     letter-spacing: -0.5px;
     border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
-    /* (선택) 시간 아래 아주 연한 구분선 */
     padding-bottom: 3px;
 }
 
-/* === 상황별 컬러 스타일 === */
-/* 1. 대화/상호작용 (파란색) */
 .log-social {
-    border-left-color: #2196f3;
-    background: rgba(33, 150, 243, 0.05);
+    border-left-color: #cccccc;
+    background: rgb(255, 255, 255);
 }
 
-/* 2. 시스템/독백 (회색) */
 .log-system {
     border-left-color: #9e9e9e;
 }
 
-/* 3. 날짜 변경 (특수) */
 .log-date {
     border: none;
     background: none;
@@ -456,9 +427,8 @@ body.dark-theme .log-entry:has(span:contains("[이벤트]")) {
     color: var(--text-secondary);
 }
 
-/* 다크모드 대응 */
 body.dark-theme .log-social {
-    background: rgba(33, 150, 243, 0.15);
+    background: rgba(181, 181, 181, 0.15);
 }
 
 body.dark-theme .log-entry {
@@ -466,80 +436,55 @@ body.dark-theme .log-entry {
     border-bottom: 1px solid #333;
 }
 
-/* 다크 모드일 때 인벤토리 전체 박스 색상 밝게 변경 */
 body.dark-theme .inventory-grid {
     background-color: rgba(255, 255, 255, 0.05) !important;
-    /* 살짝 밝은 회색 */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    /* 테두리 추가 */
 }
 
-/* 다크 모드일 때 아이템 칸 색상 변경 */
 body.dark-theme .item-slot {
     background-color: rgba(255, 255, 255, 0.08) !important;
-    /* 칸을 더 밝게 */
     border-color: rgba(255, 255, 255, 0.2) !important;
-    /* 테두리 잘 보이게 */
 }
 
-/* 다크 모드에서 마우스 올렸을 때 */
 body.dark-theme .item-slot:hover {
     background-color: rgba(255, 255, 255, 0.2) !important;
     border-color: #66bb6a !important;
-    /* 초록색 강조 */
 }
 
-/* =========================================
-   [다크모드 관계도/정보창 가시성 수정]
-   ========================================= */
-
-/* 1. 정보 박스 배경색 어둡게 변경 (기존 흰색 배경 무시) */
 body.dark-theme .info-box {
     background-color: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: #eee !important;
 }
 
-/* 2. 박스 내부의 모든 텍스트를 밝은색으로 강제 변경 */
 body.dark-theme .info-box div,
 body.dark-theme .info-box span,
 body.dark-theme .info-box strong,
 body.dark-theme .rel-desc-text {
     color: #e0e0e0 !important;
-    /* 검은 글씨(#333)를 밝은 회색으로 덮어씀 */
     border-color: rgba(255, 255, 255, 0.1) !important;
-    /* 구분선도 어둡게 */
 }
 
-/* 3. '아는사이', '연인' 같은 뱃지 디자인 따로 설정 */
 body.dark-theme .badge-title {
     background-color: #555 !important;
-    /* 회색 배경 */
     color: #fff !important;
-    /* 흰 글씨 */
 }
 
 body.dark-theme .badge-love {
     background-color: #581c35 !important;
-    /* 어두운 핑크 배경 */
     color: #ff80ab !important;
-    /* 밝은 핑크 글씨 */
 }
 
-/* 4. 관계도 수정 입력창 (다크모드) */
 body.dark-theme .rel-edit-input {
     background-color: rgba(0, 0, 0, 0.3);
     color: #fff;
     border-bottom-color: #66bb6a;
 }
 
-
-/* 모바일 최적화 */
 @media screen and (max-width: 768px) {
     .game-container {
         flex-direction: column;
     }
-
     .left-panel {
         width: 100%;
         border-right: none;
@@ -548,54 +493,41 @@ body.dark-theme .rel-edit-input {
         height: auto;
         transition: max-height 0.3s ease-out;
     }
-
     .panel-body-wrapper {
         max-height: 0;
         opacity: 0;
         transition: all 0.3s ease-out;
     }
-
     .left-panel.open .panel-body-wrapper {
         max-height: 60vh;
         opacity: 1;
         margin-top: 10px;
     }
-
     #mobile-toggle-btn {
         display: block;
     }
-
     .center-panel {
         width: 100%;
         flex: 1;
         border-right: none;
     }
-
-    /* --- [오른쪽] 로그창 (카드 스타일 적용) --- */
     .right-panel {
         width: 100%;
         height: 250px;
         min-height: 250px;
         border-top: 1px solid var(--border-color);
         background-color: var(--bg-panel);
-        /* 배경색을 패널색과 통일 */
         display: flex;
         flex-direction: column;
     }
-
-    /* 로그가 쌓이는 박스 */
     .log-container {
         flex: 1;
         overflow-y: auto;
         padding: 10px;
         background-color: var(--bg-body);
-        /* 약간 어두운 배경 */
         display: flex;
         flex-direction: column-reverse;
-        /* 최신 로그가 위로 */
     }
-
-    /* 개별 로그 카드 (공통 디자인) */
     .log-entry {
         padding: 6px 8px;
         margin-bottom: 5px;
@@ -603,47 +535,28 @@ body.dark-theme .rel-edit-input {
         font-size: 0.8rem;
         line-height: 1.4;
         background: var(--bg-panel);
-        /* 카드 배경색 */
         border-left: 4px solid #ccc;
-        /* 기본 왼쪽 띠 색상 */
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        /* 살짝 그림자 */
         transition: transform 0.2s;
         color: var(--text-primary);
     }
-
     .log-entry:hover {
         transform: translateX(2px);
     }
-
-    /* [수정] 모바일에서는 시간과 내용을 한 줄로 표시 */
     .log-time {
         display: inline-block !important;
-        /* 강제로 인라인 블록 */
         margin-bottom: 0 !important;
-        /* 아래 여백 제거 */
         margin-right: 6px;
-        /* 오른쪽 여백 추가 */
         border-bottom: none !important;
-        /* 구분선 제거 */
         padding-bottom: 0 !important;
     }
-
-    /* === 상황별 컬러 스타일 (보내주신 파일 참고) === */
-
-    /* 1. 대화/상호작용 (파란색 계열) */
     .log-social {
         border-left-color: #2196f3;
         background: rgba(33, 150, 243, 0.05);
-        /* 아주 연한 파랑 배경 */
     }
-
-    /* 2. 시스템/독백 (회색/기본) */
     .log-system {
         border-left-color: #9e9e9e;
     }
-
-    /* 3. 날짜 변경 (특수) */
     .log-date {
         border: none;
         background: none;
@@ -652,20 +565,15 @@ body.dark-theme .rel-edit-input {
         padding: 15px 0;
         color: var(--text-secondary);
     }
-
-    /* 다크모드 대응 (배경색이 너무 밝지 않게 조정) */
     body.dark-theme .log-social {
         background: rgba(33, 150, 243, 0.15);
     }
-
     body.dark-theme .log-entry {
         box-shadow: none;
         border-bottom: 1px solid #333;
     }
 }
 
-
-/* 저장 버튼 스타일 */
 .save-btn {
     width: 100%;
     padding: 10px;
@@ -678,11 +586,9 @@ body.dark-theme .rel-edit-input {
     font-size: 1rem;
     cursor: pointer;
 }
-
 .save-btn:hover {
     opacity: 0.9;
 }
-
 
 .custom-select {
     width: 100%;
@@ -695,7 +601,6 @@ body.dark-theme .rel-edit-input {
     margin-top: 5px;
 }
 
-/* [1] 스페셜 이벤트 팝업 */
 #event-popup {
     position: fixed;
     top: 50%;
@@ -717,24 +622,20 @@ body.dark-theme .rel-edit-input {
     align-items: center;
     justify-content: center;
 }
-
 #event-popup.show {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
 }
-
 #event-popup h2 {
     margin: 0 0 10px 0;
     font-size: 1.5rem;
 }
-
 #event-popup p {
     margin: 0;
     color: #fff;
     font-size: 1rem;
 }
 
-/* [2] 황금색 로그 */
 .log-special {
     background-color: #fff8e1 !important;
     border-left: 4px solid #FFC107 !important;
@@ -745,16 +646,15 @@ body.dark-theme .rel-edit-input {
 body.dark-theme .log-special {
     background-color: #4e342e !important;
     color: #ffecb3 !important;
+    border-left: 4px solid #FFC107 !important;
 }
 
-/* [기본 말풍선 스타일] */
 .char-bubble {
     position: absolute;
     bottom: 110%;
     left: 50%;
     transform: translateX(-50%);
     background: var(--bubble-bg, #ffffff);
-    /* JS에서 색상 주입 */
     color: var(--bubble-text, #000000);
     border: 2px solid #333;
     border-radius: 10px;
@@ -762,9 +662,7 @@ body.dark-theme .log-special {
     font-size: 12px;
     width: max-content;
     max-width: 200px;
-    /* [수정] 화면 가로폭의 40% 이상 커지지 않게 제한 */
     min-width: 80px;
-    /* [추가] 너무 짧아지는 것 방지 */
     white-space: normal;
     word-break: keep-all;
     line-height: 1.4;
@@ -776,12 +674,9 @@ body.dark-theme .log-special {
     font-weight: bold;
     opacity: 0;
 }
-
 .char-bubble.show {
     opacity: 1;
 }
-
-/* 말풍선 꼬리 */
 .char-bubble::after {
     content: '';
     position: absolute;
@@ -792,22 +687,13 @@ body.dark-theme .log-special {
     border-style: solid;
     border-color: var(--bubble-bg, #ffffff) transparent transparent transparent;
 }
-
-/* 1. 캐릭터가 화면 왼쪽(Left)에 있을 때 */
-/* 말풍선도 왼쪽(-60%)으로 살짝 치우침 (캐릭터 머리 위 왼쪽) */
 .char-bubble.is-left {
     transform: translateX(-70%);
 }
-
-/* 2. 캐릭터가 화면 오른쪽(Right)에 있을 때 */
-/* 말풍선도 오른쪽(-40%)으로 살짝 치우침 (캐릭터 머리 위 오른쪽) */
 .char-bubble.is-right {
     transform: translateX(-30%);
 }
 
-
-
-/* [추가] 디버그 버튼 스타일 */
 #debug-btn {
     background: none;
     border: 1px solid var(--border-color);
@@ -818,17 +704,12 @@ body.dark-theme .log-special {
     font-size: 1.2rem;
     transition: transform 0.2s;
 }
-
 #debug-btn:hover {
     transform: rotate(90deg);
 }
 
-/* 호버 시 회전 효과 */
-
-/* [추가] 모달창(팝업) 스타일 */
 .modal-overlay {
     display: none;
-    /* 기본 숨김 */
     position: fixed;
     top: 0;
     left: 0;
@@ -836,16 +717,13 @@ body.dark-theme .log-special {
     height: 100%;
     background: rgba(0, 0, 0, 0.6);
     z-index: 9999;
-    /* 최상단 */
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(3px);
 }
-
 .modal-overlay.open {
     display: flex;
 }
-
 .modal-content {
     background: var(--bg-panel);
     color: var(--text-primary);
@@ -856,7 +734,6 @@ body.dark-theme .log-special {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     min-width: 300px;
 }
-
 .modal-content button {
     padding: 8px 16px;
     border: none;
@@ -866,78 +743,47 @@ body.dark-theme .log-special {
     font-family: 'JoseonGulim';
     font-size: 1rem;
 }
-
 .modal-content button:hover {
     opacity: 0.9;
 }
 
-
-/* =========================================
-   [🎒 인벤토리 스타일 - 리뉴얼]
-   ========================================= */
-
-/* 1. 상단 상세 보기 창 (카드 형태) */
 .item-detail-view {
     background: var(--bg-panel);
-    /* 패널 배경색 */
     border-radius: 16px;
-    /* 더 둥글게 */
     padding: 10px;
     margin-bottom: 20px;
     min-height: 110px;
     display: flex;
     align-items: center;
     gap: 20px;
-
-    /* 테두리 대신 부드러운 그림자로 입체감 부여 */
     border: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08),
-        inset 0 1px 2px rgba(255, 255, 255, 0.5);
-    /* 상단 하이라이트 */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.5);
     transition: all 0.3s ease;
 }
-
-/* 상세 창 내부 아이콘 박스 (이모지용 수정) */
 .detail-icon {
     font-size: 30px !important;
-    /* 이모지는 폰트보다 작아 보여서 훨씬 크게 키움 */
-    /* color: var(--accent-color); 삭제 -> 이모지 고유 색상 사용 */
-
-    /* 아이콘 배경 원형 디자인은 유지 */
-    /*background: color-mix(in srgb, var(--accent-color) 10%, transparent); */
     padding: 8px;
     border-radius: 50%;
-    /*border: 2px solid color-mix(in srgb, var(--accent-color) 30%, transparent);*/
     min-width: 45px;
-    /* 크기 증가 */
     height: 90px;
-    /* 크기 증가 */
     display: flex;
     align-items: center;
     justify-content: center;
-    /*box-shadow: 0 4px 8px rgba(0,0,0,0.05);*/
-
-    /* 이모지 수직 정렬 보정 */
     line-height: 1;
 }
-
-/* 상세 창 텍스트 영역 */
 .detail-text {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
-
 .detail-name {
     font-size: 1rem;
     font-weight: 800;
-    /* 더 두껍게 */
     margin-bottom: 8px;
     color: var(--text-primary);
     letter-spacing: -0.5px;
 }
-
 .detail-desc {
     font-size: 0.85rem;
     color: var(--text-secondary);
@@ -946,42 +792,25 @@ body.dark-theme .log-special {
     opacity: 0.9;
 }
 
-/* =========================================
-   [🎒 인벤토리 스타일 - 최종 수정 (클래스 타격)]
-   ========================================= */
-
-/* 인벤토리 전체 영역 (JS가 이 클래스를 만듭니다) */
 .inventory-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    /* 가로 4칸 강제 */
     gap: 8px;
-    /* 사이 간격 */
     padding: 10px;
     margin-top: 10px;
     max-height: 440px;
-    /* 적절한 높이 설정 */
     overflow-y: auto;
-    /* 세로 스크롤 허용 */
-
-    /* 심플한 배경 박스 */
     background: rgba(0, 0, 0, 0.03);
     border-radius: 12px;
 }
-
-/* 개별 아이템 네모 칸 */
 .item-slot {
-    /* 1:1 정사각형 비율 유지 */
     aspect-ratio: 1 / 1;
     width: auto !important;
     height: auto !important;
-
-    /* 모던한 디자인 */
     background-color: var(--bg-panel);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -989,47 +818,33 @@ body.dark-theme .log-special {
     cursor: pointer;
     transition: all 0.2s ease;
 }
-
-/* 마우스 올렸을 때 */
 .item-slot:hover {
     transform: translateY(-2px);
     border-color: var(--accent-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
-/* 선택된 아이템 */
 .item-slot.selected {
     border: 2px solid var(--accent-color);
     background-color: rgba(76, 175, 80, 0.05);
 }
-
-/* 빈 슬롯 (점선 처리) */
 .item-slot.empty {
     background-color: transparent;
     border: 1px dashed rgba(0, 0, 0, 0.1);
     box-shadow: none;
     cursor: default;
 }
-
 .item-slot.empty:hover {
     transform: none;
     border-color: rgba(0, 0, 0, 0.1);
 }
-
-/* 아이템 아이콘 (이모지) */
 .item-slot .item-icon-emoji {
     font-size: 1.5rem;
-    /* 칸 크기에 맞춰 적절히 조절 */
     line-height: 1;
     filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
 }
-
-/* 아이템 이름 숨기기 (심플함을 위해 아이콘만 표시하고 이름은 생략) */
 .item-slot .item-name {
     display: none;
 }
-
-/* 개수 표시 배지 (우측 하단) */
 .item-count {
     position: absolute;
     bottom: -2px;
@@ -1044,32 +859,19 @@ body.dark-theme .log-special {
     z-index: 5;
 }
 
-
-/* [관계도 수정 기능 스타일] */
-.rel-card {
-    position: relative;
-    /* 버튼 위치 잡기 위해 */
-    transition: all 0.3s;
-}
-
-/* 1. 뷰 모드 (평소 상태) */
 .rel-view-mode {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 10px;
 }
-
 .rel-desc-text {
     font-size: 0.9rem;
     color: #666;
     line-height: 1.5;
     white-space: pre-wrap;
-    /* 줄바꿈 유지 */
     flex: 1;
 }
-
-/* 수정 버튼 (연필 아이콘) */
 .btn-edit-rel {
     background: none;
     border: none;
@@ -1079,46 +881,34 @@ body.dark-theme .log-special {
     font-size: 1.1rem;
     padding: 0;
 }
-
 .rel-card:hover .btn-edit-rel {
     opacity: 1;
-    /* 마우스 올렸을 때만 선명하게 */
 }
-
-/* 2. 에디트 모드 (수정 상태) */
 .rel-edit-mode {
     display: none;
-    /* 기본 숨김 */
     flex-direction: column;
     gap: 8px;
     margin-top: 5px;
 }
-
-/* 텍스트 영역 스타일 (투박한 박스 제거) */
 .rel-edit-input {
     width: 100%;
     border: none;
     border-bottom: 2px solid var(--accent-color);
-    /* 밑줄만 표시 */
     background: rgba(0, 0, 0, 0.02);
     font-family: 'JoseonGulim';
     font-size: 0.9rem;
     padding: 5px;
     resize: none;
-    /* 크기 조절 끄기 */
     outline: none;
     min-height: 60px;
     color: var(--text-primary);
     border-radius: 4px 4px 0 0;
 }
-
-/* 버튼 그룹 */
 .rel-btn-group {
     display: flex;
     justify-content: flex-end;
     gap: 5px;
 }
-
 .btn-save-rel {
     background: var(--accent-color);
     color: white;
@@ -1128,7 +918,6 @@ body.dark-theme .log-special {
     font-size: 0.8rem;
     cursor: pointer;
 }
-
 .btn-cancel-rel {
     background: #999;
     color: white;
@@ -1139,9 +928,6 @@ body.dark-theme .log-special {
     cursor: pointer;
 }
 
-
-
-/* 유람 버튼 기본 스타일 */
 .trip-btn {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -1150,75 +936,39 @@ body.dark-theme .log-special {
     border-radius: 8px;
     border: 2px solid #ddd;
     cursor: pointer;
-    
-    /* 부드러운 애니메이션 효과 */
     transition: transform 0.2s, filter 0.3s;
-    
-    /* 기본 상태 (방문한 곳): 컬러 그대로 표시 */
     filter: none;
 }
-
-/* 마우스를 올렸을 때 공통 효과: 살짝 커짐 */
 .trip-btn:hover {
-    border-color: #FFC107,
+    border-color: #FFC107;
     transform: scale(1.05);
-    z-index: 1; /* 커졌을 때 다른 요소 위에 보이게 */
+    z-index: 1;
 }
-
-/* 방문하지 않은 곳: 회색 처리 및 투명도 */
 .trip-btn.unvisited {
     filter: grayscale(100%) opacity(0.7);
 }
-
-/* 방문하지 않은 곳에 마우스를 올렸을 때: 컬러 힌트 보여주기 */
 .trip-btn.unvisited:hover {
     filter: grayscale(0%) opacity(1);
 }
-
-/* 유람 시 배경을 흐리게 만드는 스타일 */
 #game-bg.trip-blur {
     filter: blur(5px) brightness(0.7);
-    /* 5px 흐림, 밝기 70% */
     transition: filter 0.8s ease;
-    /* 부드러운 전환 */
 }
 
-/* [style.css] 황금색 로그 스타일 */
-.log-special {
-    background-color: #fff8e1 !important;
-    /* 연한 황금빛 배경 */
-    border-left: 4px solid #FFC107 !important;
-    /* 진한 황금색 테두리 */
-    color: #5d4037 !important;
-    /* 진한 갈색 글씨 */
-    font-weight: bold;
-}
-
-/* 다크모드일 때 황금색 로그 */
-body.dark-theme .log-special {
-    background-color: #4e342e !important;
-    color: #ffecb3 !important;
-    border-left: 4px solid #FFC107 !important;
-}
-
-
-/* 버튼 그룹 컨테이너 (우측 하단 고정) */
 .control-group {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    display: flex; /* 가로로 나란히 배치 */
-    gap: 10px;     /* 버튼 사이 간격 */
+    display: flex;
+    gap: 10px;
     z-index: 9999;
 }
-
-/* 시스템 버튼 공통 스타일 (BGM, 메뉴 버튼 동일 적용) */
 .sys-btn {
     width: 45px;
     height: 45px;
-    background: rgba(0, 0, 0, 0.6); /* 반투명 검정 배경 */
+    background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px; /* 둥근 사각형 */
+    border-radius: 12px;
     color: white;
     font-size: 1.2rem;
     cursor: pointer;
@@ -1229,33 +979,183 @@ body.dark-theme .log-special {
     backdrop-filter: blur(4px);
     padding: 0;
 }
-
 .sys-btn:hover {
     background: rgba(0, 0, 0, 0.8);
-    transform: translateY(-2px); /* 살짝 떠오르는 효과 */
+    transform: translateY(-2px);
 }
-
-/* 음악 재생 중일 때 스타일 (보라색 테두리 + 아이콘 흔들림) */
 #bgm-toggle-btn.playing {
-    border-color: #ce93d8; /* 연보라색 테두리 */
-    background: rgba(74, 20, 140, 0.6); /* 보라색 틴트 배경 */
+    border-color: #ce93d8;
+    background: rgba(74, 20, 140, 0.6);
     box-shadow: 0 0 10px rgba(206, 147, 216, 0.4);
 }
-
 #bgm-toggle-btn.playing span {
     animation: music-bounce 1s infinite alternate;
 }
-
-/* 아이콘이 둠칫둠칫하는 애니메이션 */
 @keyframes music-bounce {
-    0% { transform: scale(1) rotate(0deg); }
-    100% { transform: scale(1.2) rotate(10deg); }
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+    100% {
+        transform: scale(1.2) rotate(10deg);
+    }
 }
-
-/* 모바일 화면 위치 조정 */
 @media (max-width: 768px) {
     .control-group {
-        bottom: 80px; /* 하단 탭바 위에 위치하도록 */
+        bottom: 80px;
         right: 15px;
     }
+}
+
+/* =======================================================
+   [리팩토링] script.js에서 추출한 스타일 (JS HTML 제거용)
+   ======================================================= */
+
+/* 프로필 헤더 */
+.profile-header-area {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+.char-name-text {
+    margin-bottom: 5px;
+}
+.char-title-badge {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+
+/* 프로필 레이아웃 */
+.profile-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+.profile-col {
+    flex: 1;
+    margin-bottom: 10px;
+}
+.color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.color-input {
+    width: 50px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+.color-help-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* 인벤토리 (메시지) */
+.inv-empty-msg {
+    text-align: center;
+    width: 100%;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+.inv-wrapper {
+    padding: 5px;
+}
+.inv-label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+.inv-detail-guide {
+    text-align: center;
+    width: 100%;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+/* 관계도 탭 */
+.rel-wrapper {
+    padding: 5px;
+}
+.rel-stat-box {
+    margin-bottom: 15px;
+    background: var(--card-bg); /* 다크모드 대응을 위해 변수 사용 권장 */
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+.stat-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+.stat-row.love-row {
+    color: #e91e63;
+}
+.badge-base {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+.badge-intimacy {
+    background: #ddd;
+    color: #333;
+}
+.badge-affection {
+    background: #fce4ec;
+    color: #d81b60;
+}
+.rel-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 5px;
+}
+.rel-target-name {
+    font-size: 1rem;
+}
+.trip-action-btn {
+    background: #673AB7;
+    margin-top: 10px;
+}
+
+/* 캐릭터 네임택 (이동화면) */
+.char-nametag {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+/* 로그 (Log) 관련 */
+.log-date-divider {
+    font-weight: bold;
+    font-style: italic;
+    opacity: 0.8;
+}
+.log-highlight-bracket {
+    font-weight: bold;
+}
+.log-type-purple {
+    background-color: #f3e5f5;
+    border-left: 4px solid #9c27b0;
+    color: #6a1b9a;
+}
+.log-type-love {
+    background-color: #fff0f5;
+    border-left: 4px solid #e91e63;
+    color: #d81b60;
 }
