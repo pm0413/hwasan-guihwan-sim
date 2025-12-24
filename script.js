@@ -712,7 +712,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let title = "형님";
         if (charData['dangbo'].gender === '여성' && charData['chung'].gender === '여성') title = "언니";
         else if (charData['dangbo'].gender === '남성' && charData['chung'].gender === '여성') title = "누님";
-        else if (starterId === 'dangbo') title = "도사 형님";
+        else if (starterId === 'dangbo') title = "형님";
 
         const currentSeason = getSeason(gameDate.month);
 
@@ -877,7 +877,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let title = "형님";
         if (dangbo.gender === '여성' && chung.gender === '여성') title = "언니";
         else if (dangbo.gender === '남성' && chung.gender === '여성') title = "누님";
-        else if (id === 'dangbo') title = "도사 형님";
+        else if (id === 'dangbo') title = "형님";
 
         text = fillTitle(text, title);
 
