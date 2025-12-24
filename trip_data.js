@@ -1,7 +1,7 @@
 const tripDB = {
-    "luoping": {
+    "Luoping": {
         name: "운남 나평",
-        img: "luoping.jpg",
+        img: "Luoping.jpg",
         gifts: [
             "honey",           // 🍯 꿀
             "canola_flower",   // 🌼 유채꽃
